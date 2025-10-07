@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Furniture Shop{% endblock %}</title>
+
+    {% load static %}
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Google Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <!-- Optional custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <style>
+        :root {
+            --bg-cream: #f9f6f2;
+            --bg-beige: #f4ede6;
+            --text-dark: #3a3128;
+            --accent: #b57a50; /* warm wood */
+            --accent-2: #8d5a3a; /* deeper wood */
+            --success: #28a745;
+            --danger: #dc3545;
+            --muted: #6c757d;
+            --shadow-lg: 0 15px 35px rgba(0,0,0,0.12);
+            --shadow-md: 0 8px 20px rgba(0,0,0,0.10);
+        }
+
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Poppins', Arial, sans-serif;
+            color: var(--text-dark);
+            background: linear-gradient(120deg, var(--bg-cream), var(--bg-beige));
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Subtle animated gradient overlay */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: -20% -20% -20% -20%;
+            background: radial-gradient(50% 50% at 30% 20%, rgba(181,122,80,0.08) 0%, rgba(181,122,80,0) 60%),
+                        radial-gradient(40% 60% at 80% 10%, rgba(141,90,58,0.07) 0%, rgba(141,90,58,0) 60%),
+                        radial-gradient(60% 60% at 10% 80%, rgba(62,39,35,0.06) 0%, rgba(62,39,35,0) 60%);
+            animation: bgFloat 16s linear infinite alternate;
+            pointer-events: none;
+            z-index: -1;
+        }
+        @keyframes bgFloat {
+            0% { transform: translate3d(0,0,0) scale(1); }
+            100% { transform: translate3d(-2%, -1%, 0) scale(1.02); }
+        }
+
+        /* Navbar enhancements */
+        .navbar { box-shadow: var(--shadow-md); background: linear-gradient(90deg,#262b30,#2f343a); }
+        .navbar.sticky-top { backdrop-filter: saturate(140%) blur(6px); }
+        .navbar-brand { display:flex; align-items:center; gap:8px; font-weight:700; letter-spacing:.3px; }
+        .navbar .nav-link { position:relative; font-weight:600; color:#e9ecef !important; }
+        .navbar .nav-link:hover { color: #fff !important; }
+        .navbar .nav-link::after { content:""; position:absolute; left:10%; right:10%; bottom:-6px; height:2px; background: linear-gradient(90deg,#ffb74d,#ff6f00); transform: scaleX(0); transform-origin:center; transition: transform .25s ease; border-radius:2px; }
+        .navbar .nav-link:hover::after { transform: scaleX(1); }
+
+        /* Generic card hover lift */
+        .hover-lift { transition: transform .25s ease, box-shadow .25s ease; box-shadow: var(--shadow-md); }
+        .hover-lift:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); }
+
+        /* Reveal on scroll */
+        .reveal { opacity: 0; transform: translateY(16px); transition: opacity .6s ease, transform .6s ease; }
+        .reveal.in { opacity: 1; transform: translateY(0); }
+
+        /* Parallax helper */
+        .parallax { will-change: transform; }
+
+        /* Buttons */
+        .btn-accent { background: linear-gradient(90deg, var(--accent), var(--accent-2)); color: #fff; border: none; }
+        .btn-accent:hover { filter: brightness(1.05); }
+
+        /* Simple scroll-snap carousel */
+        .snap-carousel { display: grid; grid-auto-flow: column; grid-auto-columns: 80%; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 8px; }
+        .snap-carousel > * { scroll-snap-align: center; }
+        @media (min-width: 992px) { .snap-carousel { grid-auto-columns: 30%; } }
+
+        /* Quick view overlay pattern for product cards */
+        .quick-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 10px; background: rgba(0,0,0,0.35); opacity: 0; transform: translateY(8px); transition: all .25s ease; }
+        .quick-parent { position: relative; }
+        .quick-parent:hover .quick-overlay { opacity: 1; transform: translateY(0); }
+
+        /* Floating fly animation element */
+        .fly-clone { position: fixed; z-index: 1050; pointer-events: none; transition: transform .6s cubic-bezier(.22,.61,.36,1), opacity .6s; }
+
+        /* Navbar profile avatar and dropdown */
+        .nav-avatar { display:flex; align-items:center; gap:8px; cursor:pointer; user-select:none; }
+        .nav-avatar .circle { width:34px; height:34px; border-radius:50%; background:#fff; color:#4a3c2a; display:grid; place-items:center; font-weight:700; box-shadow:0 2px 8px rgba(0,0,0,.12); transition: transform .15s ease; overflow:hidden; }
+        .nav-avatar:hover .circle { transform: translateY(-1px); }
+        .nav-avatar img { width:34px; height:34px; object-fit:cover; border-radius:50%; display:block; }
+        .nav-dropdown { position: absolute; right: 0; top: 120%; background:#fff; border-radius:10px; box-shadow:0 12px 28px rgba(0,0,0,.16); padding:8px; min-width: 180px; display:none; }
+        .nav-dropdown a, .nav-dropdown button { display:block; width:100%; text-align:left; padding:8px 10px; border-radius:8px; color:#3a3128; text-decoration:none; background:none; border:none; }
+        .nav-dropdown a:hover, .nav-dropdown button:hover { background:#f6efe8; }
+        .nav-profile-wrap { position: relative; }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    {% if not hide_navbar %}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}">🪑 Furniture Shop</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center" style="gap:10px;">
+                    <li class="nav-item"><a class="nav-link text-white" href="{% url 'home' %}#product-container">Products</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="{% url 'offers' %}">Offers</a></li>
+                    {% if categories %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">Categories</a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            {% for c in categories %}
+                                {% if c.slug %}
+                                    <li><a class="dropdown-item" href="{% url 'products_by_category' c.slug %}">{{ c.name }}</a></li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item"><a class="nav-link text-white" href="/admin/">Admin</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="{% url 'wishlist' %}"><i id="nav-wishlist-icon" class="fas fa-heart me-1"></i>Wishlist</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="{% url 'cart' %}"><i id="nav-cart-icon" class="fas fa-shopping-cart me-1"></i>Cart</a></li>
+
+                    {% if user.is_authenticated %}
+                        <li class="nav-item nav-profile-wrap">
+                            <div id="navProfileBtn" class="nav-avatar">
+                                <div class="circle">
+                                    {% if user.profile and user.profile.photo %}
+                                        <img src="{{ user.profile.photo.url }}" alt="{{ user.username }}" />
+                                    {% else %}
+                                        {{ user.email|default:user.username|first|upper }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div id="navProfileMenu" class="nav-dropdown">
+                                <a href="{% url 'profile' %}">Profile</a>
+                                <a href="{% url 'my_orders' %}">My Orders</a>
+                                <a href="{% url 'wishlist' %}">Wishlist</a>
+                                <form action="{% url 'logout' %}" method="post" style="margin:0;">
+                                    {% csrf_token %}
+                                    <button type="submit">Logout</button>
+                                </form>
+                            </div>
+                        </li>
+                    {% else %}
+                        <li class="nav-item"><a class="nav-link text-white" href="{% url 'login' %}">Login</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="{% url 'signup' %}">Register</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <!-- Main content -->
+    <div class="container">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center mt-5 mb-3 text-muted">
+        © 2025 Furniture Shop
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+    // Reveal on scroll
+    (function(){
+        const items = [].slice.call(document.querySelectorAll('.reveal'));
+        if (!('IntersectionObserver' in window) || items.length === 0) {
+            items.forEach(el => el.classList.add('in'));
+            return;
+        }
+        const io = new IntersectionObserver((entries)=>{
+            entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+        }, { threshold: 0.15 });
+        items.forEach(el=>io.observe(el));
+    })();
+
+    // Parallax (data-parallax="ratio")
+    (function(){
+        const els = [].slice.call(document.querySelectorAll('[data-parallax]'));
+        if(els.length === 0) return;
+        const onScroll = ()=>{
+            const y = window.scrollY || window.pageYOffset;
+            els.forEach(el=>{
+                const r = parseFloat(el.getAttribute('data-parallax')) || 0.25;
+                el.style.transform = 'translate3d(0,' + Math.round(y * r) + 'px,0)';
+            });
+        };
+        onScroll();
+        window.addEventListener('scroll', onScroll, { passive: true });
+    })();
+
+    // Fly-to target utility: animates a small clone from source to target
+    function flyToTarget(sourceEl, targetEl) {
+        if(!sourceEl || !targetEl) return;
+        const sRect = sourceEl.getBoundingClientRect();
+        const tRect = targetEl.getBoundingClientRect();
+        const clone = sourceEl.cloneNode(true);
+        clone.classList.add('fly-clone');
+        clone.style.left = (sRect.left + window.scrollX) + 'px';
+        clone.style.top = (sRect.top + window.scrollY) + 'px';
+        clone.style.opacity = '0.9';
+        document.body.appendChild(clone);
+        const dx = (tRect.left - sRect.left);
+        const dy = (tRect.top - sRect.top);
+        const scale = 0.4;
+        requestAnimationFrame(()=>{
+            clone.style.transform = 'translate(' + dx + 'px,' + dy + 'px) scale(' + scale + ')';
+            clone.style.opacity = '0.2';
+        });
+        setTimeout(()=>{ clone.remove(); }, 650);
+    }
+
+    // Hook common buttons: wishlist hearts and add-to-cart
+    document.addEventListener('click', function(e){
+        const heart = e.target.closest('.wishlist-toggle i, .wishlist-toggle');
+        if (heart) {
+            const src = heart.tagName === 'I' ? heart : heart.querySelector('i') || heart;
+            const tgt = document.getElementById('nav-wishlist-icon');
+            flyToTarget(src, tgt);
+            return;
+        }
+        const addCart = e.target.closest('.btn-cart, .add-to-cart');
+        if (addCart) {
+            const src = addCart;
+            const tgt = document.getElementById('nav-cart-icon');
+            flyToTarget(src, tgt);
+        }
+    }, { passive: true });
+
+    // Minimal carousel controls for .snap-carousel
+    window.snapScroll = function(containerSelector, dir){
+        const el = document.querySelector(containerSelector);
+        if(!el) return;
+        const delta = el.clientWidth * 0.9 * (dir === 'next' ? 1 : -1);
+        el.scrollBy({ left: delta, behavior: 'smooth' });
+    };
+
+    // Profile dropdown toggle
+    (function(){
+        const btn = document.getElementById('navProfileBtn');
+        const menu = document.getElementById('navProfileMenu');
+        if(!btn || !menu) return;
+        function closeAll(){ menu.style.display = 'none'; }
+        btn.addEventListener('click', function(e){
+            e.stopPropagation();
+            menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+        });
+        document.addEventListener('click', function(){ closeAll(); });
+        window.addEventListener('resize', closeAll);
+    })();
+    </script>
+</body>
+</html>

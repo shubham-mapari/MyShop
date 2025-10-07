@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Offers{% endblock %}
+{% block content %}
+<div class="container my-4">
+  <h2 class="mb-3">Top Offers</h2>
+  <div class="row">
+    {% for p in products %}
+      <div class="col-md-3 mb-3">
+        <div class="card h-100 shadow-sm">
+          <img src="{{ p.image.url }}" class="card-img-top" alt="{{ p.name }}" style="height:180px; object-fit:cover;">
+          <div class="card-body">
+            <h5 class="card-title">{{ p.name }}</h5>
+            {% if p.discount %}<span class="badge text-bg-danger">{{ p.discount }}% OFF</span>{% endif %}
+            <div class="mt-2"><span class="text-success fw-semibold">₹{{ p.price }}</span></div>
+          </div>
+          <div class="card-footer bg-white d-flex justify-content-between">
+            <a href="{% url 'buy' %}" class="btn btn-sm btn-primary">Buy Now</a>
+            <a href="{% url 'add_to_cart' p.id %}" class="btn btn-sm btn-outline-primary">Add</a>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <p class="text-muted">No offers at the moment.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+

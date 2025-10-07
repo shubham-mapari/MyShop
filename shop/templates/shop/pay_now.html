@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}Pay for Order #{{ order.id }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-md-7">
+      <div class="card shadow-sm">
+        <div class="card-body p-4">
+          <h4 class="mb-3">Complete Payment</h4>
+          <p class="text-muted mb-4">Order #{{ order.id }} • Amount: ₹{{ order.total_price }}</p>
+
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <span class="badge bg-warning text-dark">Recommended</span>
+            <strong>UPI</strong>
+          </div>
+          <p class="mb-4">We'll open a secure Razorpay payment window. You can pay via UPI apps (PhonePe, Google Pay, Paytm, BHIM, etc.), card, netbanking, or wallet.</p>
+
+          <div class="d-flex gap-2">
+            <button id="payBtn" class="btn btn-primary">Pay Now</button>
+            <a href="{% url 'order_success' order.id %}" class="btn btn-outline-secondary">Pay Later</a>
+          </div>
+
+          <div id="statusMsg" class="mt-3"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+  async function fetchOrderConfig(){
+    const resp = await fetch("{% url 'payment_create' order.id %}");
+    const data = await resp.json();
+    if(!resp.ok || !data.ok){
+      throw new Error(data.message || 'Failed to initialize payment');
+    }
+    return data;
+  }
+
+  function verifyPayment(payload){
+    const formData = new FormData();
+    formData.append('razorpay_payment_id', payload.razorpay_payment_id || '');
+    formData.append('razorpay_order_id', payload.razorpay_order_id || '');
+    formData.append('razorpay_signature', payload.razorpay_signature || '');
+    return fetch("{% url 'payment_verify' %}", { method: 'POST', body: formData, headers: { 'X-Requested-With': 'XMLHttpRequest' }})
+      .then(r => r.json());
+  }
+
+  async function startPayment(){
+    const status = document.getElementById('statusMsg');
+    status.textContent = '';
+    try{
+      const cfg = await fetchOrderConfig();
+      const options = {
+        key: cfg.key,
+        amount: cfg.amount,
+        currency: cfg.currency,
+        name: cfg.name,
+        description: cfg.description,
+        order_id: cfg.order_id,
+        prefill: cfg.prefill || {},
+        notes: cfg.notes || {},
+        theme: cfg.theme || {},
+        method: { upi: true, card: true, netbanking: true, wallet: true },
+        config: { display: { blocks: { upi: { name: 'Pay via UPI', instruments: [{ method: 'upi' }] } }, sequence: ['upi', 'cards', 'netbanking', 'wallet'], preferences: { show_default_blocks: true } } },
+        handler: async function (response){
+          status.textContent = 'Verifying payment...';
+          const res = await verifyPayment(response);
+          if(res.ok){
+            window.location.href = "{% url 'order_success' order.id %}";
+          } else {
+            status.textContent = res.message || 'Verification failed. Try again.';
+          }
+        },
+        modal: {
+          ondismiss: function(){ status.textContent = 'Payment cancelled. You can try again.'; }
+        }
+      };
+      const rzp = new Razorpay(options);
+      try { rzp.open(); } catch(e){ status.textContent = 'Unable to open payment window.'; }
+    } catch(err){
+      status.textContent = (err && err.message) ? err.message : 'Failed to initialize payment.';
+    }
+  }
+
+  document.getElementById('payBtn').addEventListener('click', startPayment);
+  // Auto-open for convenience
+  window.addEventListener('load', () => setTimeout(startPayment, 300));
+</script>
+{% endblock %}
+
+

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Profile - Furniture Shop</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Poppins', Arial, sans-serif; background: linear-gradient(120deg,#f7f3ef,#efe6dd); margin:0; padding:20px; }
+    .wrap { max-width: 1060px; margin: 0 auto; }
+    .banner { background: radial-gradient(1000px 480px at -10% -10%, rgba(255,255,255,.15), transparent), url('https://images.unsplash.com/photo-1519710164239-da123dc03ef4?q=80&w=1600&auto=format&fit=crop') center/cover no-repeat; border-radius:18px; position:relative; overflow:hidden; min-height:150px; box-shadow:0 16px 38px rgba(0,0,0,.12); }
+    .header { display:flex; align-items:center; gap:18px; padding:20px; color:#fff; background: linear-gradient(90deg, rgba(74,60,42,.92), rgba(74,60,42,.7)); border-radius:18px; }
+    .avatar { width:72px; height:72px; border-radius:50%; background:#fff; color:#4a3c2a; display:grid; place-items:center; font-weight:700; box-shadow:0 6px 16px rgba(0,0,0,.25); overflow:hidden; }
+    .avatar img { width:72px; height:72px; object-fit:cover; border-radius:50%; display:block; }
+    .grid { display:grid; grid-template-columns: 2fr 1.2fr; gap:18px; margin-top:18px; }
+    .card { background:#fff; border-radius:14px; box-shadow:0 10px 22px rgba(0,0,0,.08); padding:18px; }
+    h2 { margin:0 0 6px; font-weight:600; }
+    .muted { color:#7a6c5c; font-size:13px; }
+    .row { display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f0e8e0; }
+    .row:last-child { border-bottom:none; }
+    .label { color:#7a6c5c; font-size:13px; }
+    .val { color:#3a3128; font-weight:600; }
+    .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+    .btn { padding:10px 14px; border:none; border-radius:10px; cursor:pointer; font-weight:600; }
+    .actions .btn { min-width: 140px; display:inline-flex; align-items:center; justify-content:center; }
+    .btn-accent { background: linear-gradient(90deg,#b57a50,#8d5a3a); color:#fff; }
+    .btn-dark { background:#4a3c2a; color:#fff; }
+    .stats { display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; margin-top:18px; }
+    .stat { background:#fff; border-radius:12px; padding:14px; box-shadow:0 8px 18px rgba(0,0,0,.08); text-align:center; }
+    .stat .num { font-size:20px; font-weight:700; color:#4a3c2a; }
+    .stat .cap { color:#7a6c5c; font-size:12px; }
+    @media (max-width: 900px) { .grid { grid-template-columns:1fr; } .stats { grid-template-columns: repeat(3, minmax(0,1fr)); } }
+  </style>
+  </head>
+<body>
+  <div class="wrap">
+    <div class="banner">
+      <div class="header">
+        <div class="avatar">
+          {% if user.profile and user.profile.photo %}
+            <img src="{{ user.profile.photo.url }}" alt="{{ user.username }}">
+          {% else %}
+            {{ user.username|first|upper }}
+          {% endif %}
+        </div>
+        <div>
+          <h2>{{ user.get_full_name|default:user.username }}</h2>
+          <div class="muted">Member since {{ user.date_joined|date:"M Y" }}</div>
+          <div class="stats">
+            <div class="stat"><div class="num">{{ user.wishlist_items.count|default:0 }}</div><div class="cap">Wishlist</div></div>
+            <div class="stat"><div class="num">{{ user.cart.items.count|default:0 }}</div><div class="cap">Cart Items</div></div>
+            <div class="stat"><div class="num">{{ user.profile.orders.count|default:0 }}</div><div class="cap">Orders</div></div>
+          </div>
+        </div>
+        <div style="margin-left:auto" class="actions">
+          <a class="btn btn-accent" href="{% url 'edit_profile' %}">Edit Profile</a>
+          <a class="btn btn-dark" href="{% url 'my_orders' %}">My Orders</a>
+          <form action="{% url 'logout' %}" method="post" style="margin:0;">
+            {% csrf_token %}
+            <button class="btn btn-dark" type="submit">Logout</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3 style="margin:0 0 8px">Contact</h3>
+        <div class="row"><span class="label">Email</span><span class="val">{{ user.email }}</span></div>
+        <div class="row"><span class="label">Mobile</span><span class="val">{{ profile.mobile_number|default:"—" }}</span></div>
+        <div class="row"><span class="label">Address</span><span class="val">{{ profile.address|default:"—" }}</span></div>
+      </div>
+      <div class="card">
+        <h3 style="margin:0 0 8px">Account</h3>
+        <div class="row"><span class="label">Username</span><span class="val">{{ user.username }}</span></div>
+        <div class="row"><span class="label">First name</span><span class="val">{{ user.first_name|default:"—" }}</span></div>
+        <div class="row"><span class="label">Last name</span><span class="val">{{ user.last_name|default:"—" }}</span></div>
+        <div class="actions" style="margin-top:12px">
+          <a class="btn btn-accent" href="{% url 'password_reset' %}">Reset Password</a>
+          <a class="btn btn-dark" href="{% url 'home' %}">Home</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

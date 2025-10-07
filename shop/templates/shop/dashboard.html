@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - My Furniture Shop</title>
+    <link rel="stylesheet" href="{% static 'shop/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background-color: #f4f6f8;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            background-color: #2a2f4a;
+            color: #fff;
+            padding: 10px 20px;
+        }
+        .top-bar a {
+            color: #fff;
+            margin-right: 20px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .top-bar a:hover {
+            color: #f9b934;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 220px;
+            background-color: #1c1f33;
+            height: 100vh;
+            position: fixed;
+            top: 50px;
+            left: 0;
+            padding-top: 20px;
+        }
+        .sidebar a {
+            display: block;
+            color: #fff;
+            padding: 15px 20px;
+            text-decoration: none;
+            margin-bottom: 5px;
+            border-radius: 5px;
+        }
+        .sidebar a:hover {
+            background-color: #f9b934;
+            color: #000;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 240px;
+            padding: 40px;
+        }
+        .main-content h1 {
+            color: #2a2f4a;
+        }
+        .dashboard-cards {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        .card {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            flex: 1 1 200px;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+        .card i {
+            font-size: 2.5rem;
+            color: #f9b934;
+            margin-bottom: 10px;
+        }
+        .card h3 {
+            margin: 10px 0 5px;
+            color: #2a2f4a;
+        }
+        .card p {
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <a href="{% url 'home' %}"><i class="fas fa-home"></i> Home</a>
+        <a href="#"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <a href="#"><i class="fas fa-box"></i> Products</a>
+        <a href="#"><i class="fas fa-shopping-cart"></i> Orders</a>
+        <a href="#"><i class="fas fa-tags"></i> Categories</a>
+        <a href="#"><i class="fas fa-users"></i> Customers</a>
+        <a href="#"><i class="fas fa-cogs"></i> Settings</a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <h1>Welcome to Your Dashboard</h1>
+        <p>Quick access to manage your furniture shop efficiently.</p>
+
+        <div class="dashboard-cards">
+            <div class="card">
+                <i class="fas fa-box"></i>
+                <h3>Add Product</h3>
+                <p>Quickly add new furniture items to your catalog.</p>
+            </div>
+            <div class="card">
+                <i class="fas fa-shopping-cart"></i>
+                <h3>View Orders</h3>
+                <p>Track and manage all customer orders in one place.</p>
+            </div>
+            <div class="card">
+                <i class="fas fa-tags"></i>
+                <h3>Manage Categories</h3>
+                <p>Organize your products into meaningful categories.</p>
+            </div>
+            <div class="card">
+                <i class="fas fa-users"></i>
+                <h3>Customers</h3>
+                <p>View and manage your customer information efficiently.</p>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

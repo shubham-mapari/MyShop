@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Furniture Shop - Products</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: #f9f5f0;
+      color: #333;
+      line-height: 1.5;
+    }
+
+    header {
+      background: #8d6e63;
+      color: #fff;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0px 4px 10px rgba(0,0,0,0.2);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    header h1 {
+      font-size: 1.6rem;
+    }
+
+    .search-bar input {
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: none;
+      outline: none;
+      width: 250px;
+    }
+
+   nav {
+  background: #6d4c41;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+nav a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+
+nav a:hover {
+  color: #ffd180;
+}
+
+
+.nav-right {
+  margin-left: auto;
+}
+
+
+    .category-title {
+      margin: 30px 20px 15px;
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: #4a3c2a;
+    }
+
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      padding: 0 20px 30px;
+    }
+
+    .product-card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0px 6px 15px rgba(0,0,0,0.1);
+      padding: 15px;
+      text-align: center;
+      transition: transform 0.3s, box-shadow 0.3s;
+      cursor: pointer;
+    }
+
+    .product-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0px 12px 25px rgba(0,0,0,0.2);
+    }
+
+    .product-card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
+    .product-card h3 {
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+      color: #4a3c2a;
+    }
+
+    .price {
+      font-size: 1rem;
+      font-weight: bold;
+      color: #6d4c41;
+      margin-bottom: 5px;
+    }
+
+    .discount {
+      font-size: 0.9rem;
+      color: green;
+      margin-bottom: 8px;
+    }
+
+    .rating {
+      color: #ff9800;
+      font-size: 0.9rem;
+      margin-bottom: 10px;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 8px 12px;
+      margin: 5px 3px;
+      background: #8d6e63;
+      color: #fff;
+      font-size: 14px;
+      border-radius: 6px;
+      text-decoration: none;
+      transition: background 0.3s;
+    }
+
+    .btn:hover {
+      background: #6d4c41;
+    }
+
+    footer {
+      background: #6d4c41;
+      color: #fff;
+      text-align: center;
+      padding: 15px;
+      margin-top: 20px;
+    }
+
+    @media(max-width: 480px) {
+      header {
+        flex-direction: column;
+        gap: 10px;
+      }
+      .search-bar input {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🛋️ Furniture Shop</h1>
+    <div class="search-bar">
+      <input type="text" placeholder="Search furniture...">
+    </div>
+  </header>
+
+  <nav>
+  <a href="#">Sofas</a>
+  <a href="#">Beds</a>
+  <a href="#">Chairs</a>
+  <a href="#">Tables</a>
+  <a href="#">Wardrobes</a>
+  <a href="#">Cabinets</a>
+  <a href="#">Dining</a>
+
+  
+     <div class="nav-right">
+      {% if user.is_authenticated %}
+        <a href="{% url 'profile' %}">Profile ({{ user.username }})</a>
+        <a href="{% url 'logout' %}">Logout</a>
+      {% else %}
+        <a href="{% url 'login' %}">Login</a>
+        <a href="{% url 'signup' %}">Sign Up</a>
+      {% endif %}
+      <a href="dashbord.html">Billing System</a>
+    </div>
+
+
+  <h2 class="category-title">🛋️ Sofas</h2>
+  <div class="products-grid">
+    <div class="product-card">
+      <img src="https://images.pexels.com/photos/1866149/pexels-photo-1866149.jpeg" alt="Sofa">
+      <h3>Luxury Sofa Set</h3>
+      <p class="price">₹15,999</p>
+      <p class="discount">20% off</p>
+      <p class="rating">⭐ 4.5</p>
+      <a href="#" class="btn">Add to Cart</a>
+      <a href="#" class="btn">Buy Now</a>
+    </div>
+    <div class="product-card">
+      <img src="https://images.pexels.com/photos/276583/pexels-photo-276583.jpeg" alt="Sofa">
+      <h3>Modern 3-Seater Sofa</h3>
+      <p class="price">₹12,499</p>
+      <p class="discount">15% off</p>
+      <p class="rating">⭐ 4.3</p>
+      <a href="#" class="btn">Add to Cart</a>
+      <a href="#" class="btn">Buy Now</a>
+    </div>
+    <div class="product-card">
+      <img src="https://images.pexels.com/photos/276528/pexels-photo-276528.jpeg" alt="Sofa">
+      <h3>Fabric Sofa</h3>
+      <p class="price">₹11,999</p>
+      <p class="discount">10% off</p>
+      <p class="rating">⭐ 4.2</p>
+      <a href="#" class="btn">Add to Cart</a>
+      <a href="#" class="btn">Buy Now</a>
+    </div>
+  </div>
+
+
+  <h2 class="category-title">🛏️ Beds</h2>
+  <div class="products-grid">
+    <div class="product-card">
+      <img src="https://images.pexels.com/photos/1643383/pexels-photo-1643383.jpeg" alt="Bed">
+      <h3>King Size Bed</h3>
+      <p class="price">₹25,999</p>
+      <p class="discount">30% off</p>
+      <p class="rating">⭐ 4.6</p>
+      <a href="#" class="btn">Add to Cart</a>
+      <a href="#" class="btn">Buy Now</a>
+    </div>
+    <div class="product-card">
+      <img src="https://images.pexels.com/photos/164595/pexels-photo-164595.jpeg" alt="Bed">
+      <h3>Queen Bed</h3>
+      <p class="price">₹18,499</p>
+      <p class="discount">25% off</p>
+      <p class="rating">⭐ 4.4</p>
+      <a href="#" class="btn">Add to Cart</a>
+      <a href="#" class="btn">Buy Now</a>
+    </div>
+    <div class="product-card">
+      <img src="https://images.pexels.com/photos/210265/pexels-photo-210265.jpeg" alt="Bed">
+      <h3>Wooden Double Bed</h3>
+      <p class="price">₹20,999</p>
+      <p class="discount">22% off</p>
+      <p class="rating">⭐ 4.1</p>
+      <a href="#" class="btn">Add to Cart</a>
+      <a href="#" class="btn">Buy Now</a>
+    </div>
+  </div>
+
+  <h2 class="category-title">🪑 Chairs</h2>
+  <div class="products-grid">
+    <div class="product-card">
+      <img src="https://images.pexels.com/photos/276671/pexels-photo-276671.jpeg" alt="Chair">
+      <h3>Classic Wooden Chair</h3>
+      <p class="price">₹3,999</p>
+      <p class="discount">18% off</p>
+      <p class="rating">⭐ 4.3</p>
+      <a href="#" class="btn">Add to Cart</a>
+      <a href="#" class="btn">Buy Now</a>
+    </div>
+    <div class="product-card">
+      <img src="https://images.pexels.com/photos/305814/pexels-photo-305814.jpeg" alt="Chair">
+      <h3>Office Chair</h3>
+      <p class="price">₹7,499</p>
+      <p class="discount">20% off</p>
+      <p class="rating">⭐ 4.5</p>
+      <a href="#" class="btn">Add to Cart</a>
+      <a href="#" class="btn">Buy Now</a>
+    </div>
+    <div class="product-card">
+      <img src="https://images.pexels.com/photos/963486/pexels-photo-963486.jpeg" alt="Chair">
+      <h3>Lounge Chair</h3>
+      <p class="price">₹9,999</p>
+      <p class="discount">12% off</p>
+      <p class="rating">⭐ 4.2</p>
+      <a href="#" class="btn">Add to Cart</a>
+      <a href="#" class="btn">Buy Now</a>
+    </div>
+  </div>
+
+
+  <h2 class="category-title">🪑 Tables</h2>
+  <div class="products-grid">
+    <div class="product-card">
+      <img src="https://images.pexels.com/photos/461428/pexels-photo-461428.jpeg" alt="Table">
+      <h3>Dining Table</h3>
+      <p class="price">₹12,499</p>
+      <p class="discount">15% off</p>
+      <p class="rating">⭐ 4.4</p>
+      <a href="#" class="btn">Add to Cart</a>
+      <a href="#" class="btn">Buy Now</a>
+    </div>
+    <div class="product-card">
+      <img src="https://images.pexels.com/photos/276651/pexels-photo-276651.jpeg" alt="Table">
+      <h3>Coffee Table</h3>
+      <p class="price">₹5,499</p>
+      <p class="discount">10% off</p>
+      <p class="rating">⭐ 4.0</p>
+      <a href="#" class="btn">Add to Cart</a>
+      <a href="#" class="btn">Buy Now</a>
+    </div>
+    <div class="product-card">
+      <img src="https://th.bing.com/th/id/OIP.k0RCIt01s2hQ-htP-6amZwHaGi?w=228&h=202&c=7&r=0&o=7&dpr=1.4&pid=1.7&rm=3" alt="Table">
+      <h3>Study Table</h3>
+      <p class="price">₹8,999</p>
+      <p class="discount">22% off</p>
+      <p class="rating">⭐ 4.2</p>
+      <a href="#" class="btn">Add to Cart</a>
+      <a href="#" class="btn">Buy Now</a>
+    </div>
+  </div>
+
+ 
+  <h2 class="category-title">🚪 Wardrobes</h2>
+  <div class="products-grid">
+    <div class="product-card">
+      <img src="https://images.pexels.com/photos/1643384/pexels-photo-1643384.jpeg" alt="Wardrobe">
+      <h3>2-Door Wardrobe</h3>
+      <p class="price">₹14,499</p>
+      <p class="discount">20% off</p>
+      <p class="rating">⭐ 4.3</p>
+      <a href="#" class="btn">Add to Cart</a>
+      <a href="#" class="btn">Buy Now</a>
+    </div>
+    <div class="product-card">
+      <img src="https://images.pexels.com/photos/271743/pexels-photo-271743.jpeg" alt="Wardrobe">
+      <h3>Sliding Door Wardrobe</h3>
+      <p class="price">₹22,499</p>
+      <p class="discount">18% off</p>
+      <p class="rating">⭐ 4.5</p>
+      <a href="#" class="btn">Add to Cart</a>
+      <a href="#" class="btn">Buy Now</a>
+    </div>
+    <div class="product-card">
+      <img src="https://images.pexels.com/photos/276528/pexels-photo-276528.jpeg" alt="Wardrobe">
+      <h3>Wooden Wardrobe</h3>
+      <p class="price">₹17,999</p>
+      <p class="discount">15% off</p>
+      <p class="rating">⭐ 4.1</p>
+      <a href="#" class="btn">Add to Cart</a>
+      <a href="#" class="btn">Buy Now</a>
+    </div>
+  </div>
+
+  <h2 class="category-title">🍽️ Dining Sets</h2>
+  <div class="products-grid">
+    <div class="product-card">
+      <img src="https://images.pexels.com/photos/963486/pexels-photo-963486.jpeg" alt="Dining">
+      <h3>4-Seater Dining Set</h3>
+      <p class="price">₹21,999</p>
+      <p class="discount">25% off</p>
+      <p class="rating">⭐ 4.5</p>
+      <a href="#" class="btn">Add to Cart</a>
+      <a href="#" class="btn">Buy Now</a>
+    </div>
+    <div class="product-card">
+      <img src="https://images.pexels.com/photos/461428/pexels-photo-461428.jpeg" alt="Dining">
+      <h3>6-Seater Dining Set</h3>
+      <p class="price">₹29,999</p>
+      <p class="discount">20% off</p>
+      <p class="rating">⭐ 4.6</p>
+      <a href="#" class="btn">Add to Cart</a>
+      <a href="#" class="btn">Buy Now</a>
+    </div>
+    <div class="product-card">
+      <img src="https://images.pexels.com/photos/276651/pexels-photo-276651.jpeg" alt="Dining">
+      <h3>Glass Dining Set</h3>
+      <p class="price">₹18,499</p>
+      <p class="discount">15% off</p>
+      <p class="rating">⭐ 4.3</p>
+      <a href="#" class="btn">Add to Cart</a>
+      <a href="#" class="btn">Buy Now</a>
+    </div>
+  </div>
+
+  <footer>
+    <p>© 2025 Furniture Shop | All Rights Reserved</p>
+  </footer>
+</body>
+</html>

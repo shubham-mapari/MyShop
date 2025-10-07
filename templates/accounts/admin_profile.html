@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Profile</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box}
+    body{font-family:'Poppins',Arial,sans-serif;background:linear-gradient(120deg,#f7f3ef,#efe6dd);margin:0;padding:20px}
+    .wrap{max-width:1000px;margin:0 auto}
+    .header{background:#4a3c2a;color:#fff;padding:18px 20px;border-radius:14px;box-shadow:0 10px 24px rgba(0,0,0,.12);display:flex;align-items:center;gap:16px}
+    .badge{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+    .pill{background:#fff1;border-radius:999px;padding:6px 10px;font-size:12px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+    .card{background:#fff;border-radius:14px;box-shadow:0 8px 18px rgba(0,0,0,.08);padding:18px}
+    h2,h3{margin:0 0 8px}
+    .row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0e8e0}
+    .row:last-child{border-bottom:none}
+    .label{color:#7a6c5c;font-size:13px}
+    .val{color:#3a3128;font-weight:600}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .btn{padding:10px 14px;border:none;border-radius:10px;cursor:pointer;font-weight:600;text-decoration:none;display:inline-block}
+    .btn-accent{background:linear-gradient(90deg,#b57a50,#8d5a3a);color:#fff}
+    .btn-dark{background:#4a3c2a;color:#fff}
+    @media(max-width:760px){.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="header">
+      <div>
+        <h2>Admin Dashboard</h2>
+        <div style="opacity:.85;font-size:13px">Welcome, {{ request.user.get_full_name|default:request.user.username }}</div>
+      </div>
+      <div class="badge">
+        <span class="pill">Role: {{ profile.admin_role|default:'Admin' }}</span>
+        <span class="pill">Shop: {{ profile.shop_name|default:'—' }}</span>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Profile Info</h3>
+        <div class="row"><span class="label">Username</span><span class="val">{{ request.user.username }}</span></div>
+        <div class="row"><span class="label">Email</span><span class="val">{{ request.user.email }}</span></div>
+        <div class="row"><span class="label">Phone</span><span class="val">{{ profile.phone|default:'—' }}</span></div>
+        <div class="row"><span class="label">Address</span><span class="val">{{ profile.address|default:'—' }}</span></div>
+        <div class="actions">
+          <a class="btn btn-accent" href="{% url 'admin_edit_profile' %}">Edit Profile</a>
+          <a class="btn btn-dark" href="{% url 'home' %}">Go to Store</a>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Security</h3>
+        <div class="row"><span class="label">Security Q.</span><span class="val">{{ profile.security_question|default:'—' }}</span></div>
+        <div class="actions" style="margin-top:12px">
+          <a class="btn btn-accent" href="{% url 'password_reset' %}">Reset Password</a>
+          <form action="{% url 'admin_logout' %}" method="post" style="display:inline">
+            {% csrf_token %}
+            <button class="btn btn-dark" type="submit">Logout</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+
+
+
+

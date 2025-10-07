@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}Returns & Refunds{% endblock %}
+{% block content %}
+<div class="container my-4">
+  <h2 class="mb-3">Returns & Refunds</h2>
+  <p>Return products within 7 days of delivery if unused and in original packaging.</p>
+  <ol>
+    <li>Initiate a request from your <a href="{% url 'dashboard' %}">Orders</a> page.</li>
+    <li>Our team will schedule a pickup.</li>
+    <li>Refunds are processed to the original payment method within 5–7 business days.</li>
+  </ol>
+</div>
+{% endblock %}
+

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Supplier Management - Furniture Shop</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(to right, #f0f4f8, #d9e2ec);
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #1f2937;
+      font-size: 2rem;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: auto;
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    input, select {
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      width: 100%;
+      font-size: 16px;
+      transition: border 0.3s;
+    }
+
+    input:focus, select:focus {
+      border-color: #2563eb;
+      outline: none;
+    }
+
+    button {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      background-color: #16a34a;
+      color: #ffffff;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+    }
+
+    button:hover {
+      background-color: #15803d;
+      transform: scale(1.05);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow-x: auto;
+    }
+
+    th, td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #e2e8f0;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f1f5f9;
+      font-weight: 600;
+    }
+
+    tr:hover {
+      background-color: #ecfdf5;
+    }
+
+    @media (max-width: 768px) {
+      form {
+        grid-template-columns: 1fr;
+      }
+
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+
+      thead tr {
+        display: none;
+      }
+
+      td {
+        position: relative;
+        padding-left: 50%;
+        text-align: right;
+      }
+
+      td::before {
+        position: absolute;
+        top: 12px;
+        left: 15px;
+        width: 45%;
+        white-space: nowrap;
+        font-weight: 600;
+        text-align: left;
+        content: attr(data-label);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Supplier Management</h1>
+
+    <form id="supplierForm">
+      <input type="text" id="supplierId" placeholder="Supplier ID" required>
+      <input type="text" id="supplierName" placeholder="Supplier Name" required>
+      <input type="text" id="supplierContact" placeholder="Contact Number" required>
+      <input type="email" id="supplierEmail" placeholder="Email" required>
+      <input type="text" id="supplierAddress" placeholder="Address" required>
+      <button type="button" onclick="addSupplier()"><i class="fa fa-plus"></i> Add Supplier</button>
+      <button type="button" onclick="updateSupplier()"><i class="fa fa-pen"></i> Update Supplier</button>
+    </form>
+
+    <table id="supplierTable">
+      <thead>
+        <tr>
+          <th>Supplier ID</th>
+          <th>Name</th>
+          <th>Contact</th>
+          <th>Email</th>
+          <th>Address</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    const suppliers = [];
+
+    function addSupplier() {
+      const id = document.getElementById('supplierId').value;
+      const name = document.getElementById('supplierName').value;
+      const contact = document.getElementById('supplierContact').value;
+      const email = document.getElementById('supplierEmail').value;
+      const address = document.getElementById('supplierAddress').value;
+
+      if (!id || !name || !contact || !email || !address) return alert('Please fill all fields');
+
+      suppliers.push({ id, name, contact, email, address });
+      renderTable();
+      document.getElementById('supplierForm').reset();
+    }
+
+    function updateSupplier() {
+      const id = document.getElementById('supplierId').value;
+      const supplier = suppliers.find(s => s.id === id);
+      if (!supplier) return alert('Supplier not found');
+
+      supplier.name = document.getElementById('supplierName').value;
+      supplier.contact = document.getElementById('supplierContact').value;
+      supplier.email = document.getElementById('supplierEmail').value;
+      supplier.address = document.getElementById('supplierAddress').value;
+      renderTable();
+      document.getElementById('supplierForm').reset();
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('supplierTable').querySelector('tbody');
+      tbody.innerHTML = '';
+      suppliers.forEach(s => {
+        const row = `<tr>
+          <td data-label="Supplier ID">${s.id}</td>
+          <td data-label="Name">${s.name}</td>
+          <td data-label="Contact">${s.contact}</td>
+          <td data-label="Email">${s.email}</td>
+          <td data-label="Address">${s.address}</td>
+        </tr>`;
+        tbody.innerHTML += row;
+      });
+    }
+  </script>
+
+</body>
+</html>

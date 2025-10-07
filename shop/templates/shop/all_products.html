@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mt-4">
+  <h1 class="text-center mb-5 text-primary fw-bold">🛋️ Explore Our Products</h1>
+
+  {% if categories %}
+    {% for category in categories %}
+      <h2 class="mt-5 mb-4 text-secondary border-bottom pb-2">{{ category.name }}</h2>
+
+      <div class="row">
+        {% if category.products.all %}
+          {% for product in category.products.all %}
+            <div class="col-md-3 mb-4">
+              <div class="card h-100 shadow-sm border-0 rounded-4">
+                <img src="{{ product.image.url }}" class="card-img-top rounded-top-4" alt="{{ product.name }}" style="height: 200px; object-fit: cover;">
+                
+                <div class="card-body text-center">
+                  <h5 class="card-title fw-semibold text-dark">{{ product.name }}</h5>
+                  <p class="card-text fs-5 text-success mb-1">₹{{ product.price }}</p>
+
+                  {% if product.discount %}
+                    <p class="text-danger mb-1"><b>{{ product.discount }}% OFF</b></p>
+                    <p class="text-muted"><small>Now only ₹{{ product.discounted_price }}</small></p>
+                  {% endif %}
+
+                  {% if product.rating %}
+                    <p class="text-warning mb-0">⭐ {{ product.rating }}</p>
+                  {% endif %}
+                </div>
+
+                <div class="card-footer bg-light border-top-0 d-flex justify-content-between align-items-center p-3">
+                  <div>
+                    <a href="{% url 'buy_now' product.id %}" class="btn btn-success btn-sm px-3">Buy Now</a>
+                    <a href="{% url 'add_to_cart' product.id %}" class="btn btn-outline-primary btn-sm px-3 add-to-cart">Add to Cart</a>
+                  </div>
+                  <button class="btn btn-link p-0 wishlist-toggle" data-product-id="{{ product.id }}" title="Add to Wishlist">
+                    <i class="fas fa-heart {% if product.id in wishlist_ids %}text-danger{% else %}text-secondary{% endif %}"
+                       style="font-size:20px;color:{% if product.id in wishlist_ids %}#dc3545{% else %}#6c757d{% endif %};"></i>
+                  </button>
+                </div>
+                <script>
+                document.addEventListener('click', function(e){
+                  const btn = e.target.closest('.wishlist-toggle');
+                  if(!btn) return;
+                  const pid = btn.getAttribute('data-product-id');
+                  fetch(`{% url 'toggle_wishlist' 0 %}`.replace('0', pid), {
+                    method: 'POST',
+                    headers: {
+                      'X-CSRFToken': (document.cookie.match(/csrftoken=([^;]+)/)||[])[1] || '',
+                      'X-Requested-With': 'XMLHttpRequest'
+                    }
+                  }).then(async (r)=>{
+                    if (r.redirected) { window.location = r.url; return; }
+                    let data = {};
+                    try { data = await r.json(); } catch (_) {}
+                    const icon = btn.querySelector('i');
+                    if(!icon) return;
+                    if(data.status === 'added'){
+                      icon.classList.remove('text-secondary');
+                      icon.classList.add('text-danger');
+                      icon.style.color = '#dc3545';
+                      window.location = '{% url 'wishlist' %}';
+                    } else if(data.status === 'removed'){
+                      icon.classList.remove('text-danger');
+                      icon.classList.add('text-secondary');
+                      icon.style.color = '#6c757d';
+                      window.location = '{% url 'wishlist' %}';
+                    }
+                  });
+                });
+                </script>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p class="text-muted">No products in this category.</p>
+        {% endif %}
+      </div>
+    {% endfor %}
+  {% else %}
+    <p class="text-center mt-5 text-muted fs-5">No categories or products available at the moment.</p>
+  {% endif %}
+</div>
+
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}Track Order{% endblock %}
+{% block content %}
+<div class="container my-4">
+  <h2 class="mb-3">Track Your Order</h2>
+  <form class="row g-2" method="get">
+    <div class="col-sm-4">
+      <input class="form-control" type="text" name="order_id" placeholder="Enter Order ID">
+    </div>
+    <div class="col-sm-3">
+      <button class="btn btn-primary" type="submit">Track</button>
+    </div>
+  </form>
+  {% if request.GET.order_id %}
+  <div class="mt-4">
+    <p>Status for <strong>#{{ request.GET.order_id }}</strong>: In transit (demo).</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+

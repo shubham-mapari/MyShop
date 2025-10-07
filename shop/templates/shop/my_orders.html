@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}My Orders{% endblock %}
+{% block content %}
+<div class="container my-4">
+  <h2 class="mb-3">My Orders</h2>
+  {% if orders %}
+    {% for order in orders %}
+      <div class="card mb-3 shadow-sm">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h5 class="mb-1">Order #{{ order.id }}</h5>
+              <div class="text-muted">Placed {{ order.created_at }}</div>
+            </div>
+            <div><span class="badge text-bg-secondary">{{ order.status }}</span></div>
+          </div>
+          <hr>
+          <ul class="mb-2">
+            {% for item in order.items.all %}
+              <li>{{ item.product.name }} × {{ item.quantity }}</li>
+            {% endfor %}
+          </ul>
+          <div class="fw-semibold">Total: ₹{{ order.total_price }}</div>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p class="text-muted">You have not placed any orders yet.</p>
+  {% endif %}
+</div>
+{% endblock %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Orders</title>
+</head>
+<body>
+    <h1>My Orders</h1>
+    <ul>
+        {% for order in orders %}
+            <li>
+                Order #{{ order.id }} - {{ order.status }} - ${{ order.total_price }}
+                <ul>
+                    {% for item in order.orderitem_set.all %}
+                        <li>{{ item.product.name }} (x{{ item.quantity }})</li>
+                    {% endfor %}
+                </ul>
+            </li>
+        {% empty %}
+            <li>No orders found</li>
+        {% endfor %}
+    </ul>
+
+    <a href="/">Back to Home</a>
+</body>
+</html>

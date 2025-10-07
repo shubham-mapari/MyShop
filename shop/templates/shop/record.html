@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Records - Furniture Shop</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(to right, #f0f4f8, #d9e2ec);
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #1f2937;
+      font-size: 2rem;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: auto;
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    input, select {
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      width: 100%;
+      font-size: 16px;
+      transition: border 0.3s;
+    }
+
+    input:focus, select:focus {
+      border-color: #2563eb;
+      outline: none;
+    }
+
+    button {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      background-color: #f59e0b;
+      color: #ffffff;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+    }
+
+    button:hover {
+      background-color: #b45309;
+      transform: scale(1.05);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow-x: auto;
+    }
+
+    th, td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #e2e8f0;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f1f5f9;
+      font-weight: 600;
+    }
+
+    tr:hover {
+      background-color: #fef3c7;
+    }
+
+    @media (max-width: 768px) {
+      form {
+        grid-template-columns: 1fr;
+      }
+
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+
+      thead tr {
+        display: none;
+      }
+
+      td {
+        position: relative;
+        padding-left: 50%;
+        text-align: right;
+      }
+
+      td::before {
+        position: absolute;
+        top: 12px;
+        left: 15px;
+        width: 45%;
+        white-space: nowrap;
+        font-weight: 600;
+        text-align: left;
+        content: attr(data-label);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Customer Records</h1>
+
+    <form id="customerForm">
+      <input type="text" id="customerId" placeholder="Customer ID" required>
+      <input type="text" id="customerName" placeholder="Customer Name" required>
+      <input type="text" id="customerContact" placeholder="Contact Number" required>
+      <input type="email" id="customerEmail" placeholder="Email" required>
+      <input type="text" id="customerAddress" placeholder="Address" required>
+      <button type="button" onclick="addCustomer()"><i class="fa fa-plus"></i> Add Customer</button>
+      <button type="button" onclick="updateCustomer()"><i class="fa fa-pen"></i> Update Customer</button>
+    </form>
+
+    <table id="customerTable">
+      <thead>
+        <tr>
+          <th>Customer ID</th>
+          <th>Name</th>
+          <th>Contact</th>
+          <th>Email</th>
+          <th>Address</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    const customers = [];
+
+    function addCustomer() {
+      const id = document.getElementById('customerId').value;
+      const name = document.getElementById('customerName').value;
+      const contact = document.getElementById('customerContact').value;
+      const email = document.getElementById('customerEmail').value;
+      const address = document.getElementById('customerAddress').value;
+
+      if (!id || !name || !contact || !email || !address) return alert('Please fill all fields');
+
+      customers.push({ id, name, contact, email, address });
+      renderTable();
+      document.getElementById('customerForm').reset();
+    }
+
+    function updateCustomer() {
+      const id = document.getElementById('customerId').value;
+      const customer = customers.find(c => c.id === id);
+      if (!customer) return alert('Customer not found');
+
+      customer.name = document.getElementById('customerName').value;
+      customer.contact = document.getElementById('customerContact').value;
+      customer.email = document.getElementById('customerEmail').value;
+      customer.address = document.getElementById('customerAddress').value;
+      renderTable();
+      document.getElementById('customerForm').reset();
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('customerTable').querySelector('tbody');
+      tbody.innerHTML = '';
+      customers.forEach(c => {
+        const row = `<tr>
+          <td data-label="Customer ID">${c.id}</td>
+          <td data-label="Name">${c.name}</td>
+          <td data-label="Contact">${c.contact}</td>
+          <td data-label="Email">${c.email}</td>
+          <td data-label="Address">${c.address}</td>
+        </tr>`;
+        tbody.innerHTML += row;
+      });
+    }
+  </script>
+
+</body>
+</html>

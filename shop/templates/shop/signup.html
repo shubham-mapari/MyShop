@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Furniture Shop</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+            padding: 20px;
+        }
+
+        .register-container {
+            background: #fff;
+            padding: 35px 40px;
+            border-radius: 15px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .register-container h2 {
+            margin-bottom: 20px;
+            color: #8b4513;
+            font-size: 26px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #5c4033;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d2b48c;
+            border-radius: 8px;
+            font-size: 15px;
+            background: #fff8f0;
+            transition: 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: #cd853f;
+            box-shadow: 0 0 8px rgba(205, 133, 63, 0.5);
+            outline: none;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: #d2691e;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background: #8b4513;
+        }
+
+        .extra-links {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 15px;
+        }
+
+        .extra-links a {
+            color: #a0522d;
+            text-decoration: none;
+            margin: 0 5px;
+            transition: 0.3s;
+        }
+
+        .extra-links a:hover {
+            text-decoration: underline;
+            color: #8b4513;
+        }
+
+        .message {
+            padding: 14px 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: left;
+            animation: slideIn 0.6s ease forwards, fadeOut 0.5s ease 5s forwards;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .message.success {
+            background: linear-gradient(135deg, #d4edda, #b6e1c6);
+            color: #155724;
+            border-left: 6px solid #28a745;
+        }
+
+        .message.error {
+            background: linear-gradient(135deg, #f8d7da, #f1b6b9);
+            color: #721c24;
+            border-left: 6px solid #dc3545;
+        }
+
+        .message.info {
+            background: linear-gradient(135deg, #d1ecf1, #b3d9e4);
+            color: #0c5460;
+            border-left: 6px solid #17a2b8;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .register-container {
+                padding: 25px;
+            }
+
+            .register-container h2 {
+                font-size: 22px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .register-container {
+                padding: 20px;
+            }
+
+            .register-container h2 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="register-container">
+        <h2>Create Account</h2>
+
+        <!-- Django Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="message
+                    {% if message.tags == 'success' %}success
+                    {% elif message.tags == 'error' %}error
+                    {% else %}info{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Signup Form -->
+        <form method="POST" action="{% url 'signup' %}">
+            {% csrf_token %}
+            <div class="input-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" placeholder="Enter your username"
+                    autocomplete="username" required>
+            </div>
+
+            <div class="input-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" placeholder="Enter your email" autocomplete="email"
+                    required>
+            </div>
+
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter password"
+                    autocomplete="new-password" required>
+            </div>
+
+            <div class="input-group">
+                <label for="confirm-password">Confirm Password</label>
+                <input type="password" id="confirm-password" name="password2" placeholder="Confirm password"
+                autocomplete="new-password" required>
+            </div>
+
+            <button type="submit" class="btn">Register</button>
+        </form>
+
+        <div class="extra-links">
+            <p>Already have an account? <a href="{% url 'login' %}">Login</a></p>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block title %}Order Success{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <div class="text-center">
+    <h3>Your order #{{ order_id }} was created.</h3>
+    <p class="text-muted">If you chose UPI and didn't complete payment, you can pay now.</p>
+    <a class="btn btn-primary" href="{% url 'pay_now' order_id %}">Pay Now</a>
+  </div>
+</div>
+{% endblock %}

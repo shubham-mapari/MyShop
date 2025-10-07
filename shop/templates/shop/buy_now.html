@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Buy Now{% endblock %}
+
+{% block content %}
+
+<div class="container my-4">
+  <h2 class="mb-4">Checkout</h2>
+
+  <div class="row g-4">
+    {% if product %}
+    <div class="col-md-5">
+      <div class="card shadow-sm">
+        <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}" style="object-fit:cover; max-height:280px;">
+        <div class="card-body">
+          <h5 class="card-title mb-2">{{ product.name }}</h5>
+          <p class="card-text fs-5 mb-0">Price: ₹{{ product.price }}</p>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="col-md-7">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Billing Details</h5>
+          <form method="post">
+            {% csrf_token %}
+
+            <div class="mb-3">
+              <label for="bn_name" class="form-label">Full Name</label>
+              <input type="text" class="form-control" id="bn_name" name="name" value="{{ request.user.get_full_name|default:request.user.username }}" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="bn_phone" class="form-label">Phone</label>
+              <input type="tel" class="form-control" id="bn_phone" name="phone" value="{{ request.user.profile.mobile_number }}" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="bn_address" class="form-label">Address</label>
+              <textarea class="form-control" id="bn_address" name="address" rows="3" required>{{ request.user.profile.address }}</textarea>
+            </div>
+
+            <div class="mb-3">
+              <label for="bn_payment" class="form-label">Payment Method</label>
+              <select class="form-select" id="bn_payment" name="payment_method" required>
+                <option value="cod">Cash on Delivery</option>
+                <option value="card">Credit/Debit Card</option>
+                <option value="upi">UPI</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Confirm Order</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+
+
+

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ current_category.name|default:"All Products" }} - My Furniture Shop</title>
+    <style>
+        body {
+            font-family: 'Poppins', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+
+        h1 {
+            text-align: center;
+            margin: 30px 0;
+            color: #333;
+        }
+
+        .categories {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .categories a {
+            margin: 0 10px;
+            text-decoration: none;
+            color: #555;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .categories a:hover {
+            color: #fff;
+            background-color: #007bff;
+        }
+
+        .categories a.current {
+            color: #fff;
+            background-color: #28a745;
+        }
+
+        .product-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            padding: 0 20px 40px;
+        }
+
+        .product {
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 15px;
+            width: 230px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .product:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+        }
+
+        .product img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .product h3 {
+            margin-top: 10px;
+            font-size: 1.1rem;
+            color: #333;
+        }
+
+        .price {
+            font-size: 1rem;
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .description {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 8px;
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 12px;
+            gap: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 8px 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-buy {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .btn-buy:hover {
+            background-color: #218838;
+        }
+
+        .btn-cart {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-cart:hover {
+            background-color: #0056b3;
+        }
+
+        p.no-products {
+            text-align: center;
+            color: #777;
+            font-size: 1rem;
+            margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+    <h1>{{ current_category.name|default:"All Products" }}</h1>
+
+    <!-- Category Filter -->
+    <div class="categories">
+        <a href="{% url 'all_products' %}" class="{% if not current_category %}current{% endif %}">All</a>
+        {% for category in categories %}
+            {% if category.slug %}
+                <a href="{% url 'products_by_category' category.slug %}" class="{% if current_category == category %}current{% endif %}">
+                    {{ category.name }}
+                </a>
+            {% endif %}
+        {% endfor %}
+    </div>
+
+    <!-- Product List -->
+    <div class="product-list">
+        {% for product in products %}
+            <div class="product">
+                <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                <h3>{{ product.name }}</h3>
+                <p class="price">₹{{ product.price }}</p>
+
+                {% if product.description %}
+                    <p class="description">{{ product.description|truncatewords:12 }}</p>
+                {% endif %}
+
+                <div class="btn-group" style="display:flex;align-items:center;gap:10px;">
+                    <a href="{% url 'add_to_cart' product.id %}" class="btn btn-cart add-to-cart">Add to Cart</a>
+                    <a href="{% url 'buy_now' product.id %}" class="btn btn-buy">Buy Now</a>
+                    <button class="btn wishlist-toggle" data-product-id="{{ product.id }}" title="Add to Wishlist" style="background:none;border:none;cursor:pointer;">
+                        <i class="fas fa-heart {% if product.id in wishlist_ids %}text-danger{% else %}text-secondary{% endif %}"
+                           style="font-size:18px;color:{% if product.id in wishlist_ids %}#dc3545{% else %}#6c757d{% endif %};"></i>
+                    </button>
+                </div>
+                
+                <script>
+                document.addEventListener('click', function(e){
+                  const btn = e.target.closest('.wishlist-toggle');
+                  if(!btn) return;
+                  const pid = btn.getAttribute('data-product-id');
+                  fetch(`{% url 'toggle_wishlist' 0 %}`.replace('0', pid), {
+                    method: 'POST',
+                    headers: {
+                      'X-CSRFToken': (document.cookie.match(/csrftoken=([^;]+)/)||[])[1] || '',
+                      'X-Requested-With': 'XMLHttpRequest'
+                    }
+                  }).then(async (r)=>{
+                    if (r.redirected) { window.location = r.url; return; }
+                    let data = {};
+                    try { data = await r.json(); } catch (_) {}
+                    const icon = btn.querySelector('i');
+                    if(!icon) return;
+                    if(data.status === 'added'){
+                      icon.classList.remove('text-secondary');
+                      icon.classList.add('text-danger');
+                      icon.style.color = '#dc3545';
+                      window.location = '{% url 'wishlist' %}';
+                    } else if(data.status === 'removed'){
+                      icon.classList.remove('text-danger');
+                      icon.classList.add('text-secondary');
+                      icon.style.color = '#6c757d';
+                      window.location = '{% url 'wishlist' %}';
+                    }
+                  });
+                });
+                </script>
+            </div>
+        {% empty %}
+            <p class="no-products">No products available in this category.</p>
+        {% endfor %}
+    </div>
+</body>
+</html>

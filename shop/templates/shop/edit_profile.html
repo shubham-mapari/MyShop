@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Profile - Furniture Shop</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body{font-family:'Poppins',Arial,sans-serif;background:radial-gradient(1000px 480px at 10% -10%,#efe6dd 0%,transparent 60%),radial-gradient(1200px 520px at 110% 20%,#f7f3ef 0%,transparent 55%),#f7f3ef;margin:0;padding:24px;display:grid;place-items:center;min-height:100vh}
+    .card{background:#fff;box-shadow:0 16px 38px rgba(0,0,0,.12);border-radius:18px;padding:28px 24px;width:100%;max-width:900px}
+    .card h2{margin:0 0 18px;font-weight:700;color:#4a3c2a}
+    .sub{color:#7a6c5c;font-size:13px;margin-bottom:10px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    @media(max-width:700px){.row{grid-template-columns:1fr}}
+    label{font-size:14px;color:#6f6255;margin:10px 0 6px;display:block}
+    input{width:100%;padding:14px 16px;border:1px solid #e1d7cd;border-radius:12px;outline:none;font-size:15px;background:#fff}
+    input:focus{border-color:#b57a50;box-shadow:0 0 0 4px rgba(181,122,80,.14)}
+    .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}
+    .btn{padding:12px 16px;border:none;border-radius:12px;font-weight:600;cursor:pointer}
+    .btn-accent{background:linear-gradient(90deg,#b57a50,#8d5a3a);color:#fff}
+    .btn-dark{background:#4a3c2a;color:#fff}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Edit Profile</h2>
+    <div class="sub">Keep your contact details up to date for smooth deliveries and notifications.</div>
+    <form method="POST">
+      {% csrf_token %}
+      <div class="row">
+        <div>
+          <label for="fn">First Name</label>
+          <input id="fn" type="text" name="first_name" value="{{ user.first_name }}" placeholder="First Name" required>
+        </div>
+        <div>
+          <label for="ln">Last Name</label>
+          <input id="ln" type="text" name="last_name" value="{{ user.last_name }}" placeholder="Last Name" required>
+        </div>
+      </div>
+      <label for="em">Email</label>
+      <input id="em" type="email" name="email" value="{{ user.email }}" placeholder="Email" required>
+      <div class="row">
+        <div>
+          <label for="mn">Mobile Number</label>
+          <input id="mn" type="text" name="mobile_number" value="{{ profile.mobile_number }}" placeholder="Mobile Number">
+        </div>
+        <div>
+          <label for="ad">Address</label>
+          <input id="ad" type="text" name="address" value="{{ profile.address }}" placeholder="Address">
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-accent" type="submit">Update Profile</button>
+        <a class="btn btn-dark" href="{% url 'profile' %}">Cancel</a>
+      </div>
+    </form>
+  </div>
+</body>
+</html>
