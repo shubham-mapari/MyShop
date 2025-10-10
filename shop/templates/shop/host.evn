@@ -1,5 +1,0 @@
-SECRET_KEY=your-secret-key
-DEBUG=True
-EMAIL_HOST_USER=myfurnitureshop77@gmail.com
-EMAIL_HOST_PASSWORD=dkvtgxfpqgaiwqug
-ALLOWED_HOSTS=127.0.0.1,localhost
