@@ -25,19 +25,19 @@
             <ul class="list-group">
               <li class="list-group-item d-flex justify-content-between">
                 <span>Subtotal:</span>
-                <span id="subtotal">₹{{ product.price }}</span>
+                <span id="subtotal">₹{{ subtotal }}</span>
               </li>
               <li class="list-group-item d-flex justify-content-between">
                 <span>Tax (GST 18%):</span>
-                <span id="tax">₹{{ product.price|mul:0.18|floatformat:2 }}</span>
+                <span id="tax">₹{{ tax }}</span>
               </li>
               <li class="list-group-item d-flex justify-content-between">
                 <span>Delivery:</span>
-                <span id="delivery">₹50</span>
+                <span id="delivery">₹{{ delivery }}</span>
               </li>
               <li class="list-group-item d-flex justify-content-between fw-bold">
                 <span>Total:</span>
-                <span id="grand_total">₹{{ product.price|mul:1.18|add:50|floatformat:2 }}</span>
+                <span id="grand_total">₹{{ total }}</span>
               </li>
             </ul>
           </div>
@@ -52,7 +52,7 @@
           <h5 class="card-title">Billing Details</h5>
           <form method="post">
             {% csrf_token %}
-            <input type="hidden" id="final_total" name="total_amount" value="{{ product.price|mul:1.18|add:50|floatformat:2 }}">
+            <input type="hidden" id="final_total" name="total_amount" value="{{ total }}">
 
             <div class="mb-3">
               <label for="bn_name" class="form-label">Full Name</label>
