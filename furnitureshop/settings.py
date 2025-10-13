@@ -12,8 +12,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ==========================
 SECRET_KEY = config("SECRET_KEY", default="insecure-key")
 DEBUG = config("DEBUG", default=True, cast=bool)
-ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="127.0.0.1,localhost").split(",")
-# Optional: CSRF trusted origins (comma-separated full URLs). Needed when using ngrok/public tunnels.
+ALLOWED_HOSTS = [
+    'myfurnitureshop.onrender.com',
+    'localhost',
+    '127.0.0.1'
+]
+
 _csrf_origins = config("CSRF_TRUSTED_ORIGINS", default="").split(",")
 CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_origins if o.strip()]
 
