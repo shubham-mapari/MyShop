@@ -1,132 +1,198 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Billing - Furniture Shop</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <style>
-    body { font-family:'Poppins', Arial, sans-serif; background: radial-gradient(1200px 600px at 20% -10%, #e9dfd6 0%, transparent 60%), radial-gradient(1000px 600px at 120% 20%, #efe6dd 0%, transparent 55%), #f7f3ef; margin:0; padding:24px; }
-    .container { max-width: 980px; margin: 0 auto; display:grid; grid-template-columns: 1.4fr .9fr; gap:20px; align-items:start; }
-    @media (max-width: 900px){ .container { grid-template-columns: 1fr; } }
-    .card { background:#fff; border-radius:14px; box-shadow:0 12px 28px rgba(0,0,0,.12); }
-    .card h3 { margin:0; font-weight:600; color:#4a3c2a; }
-    .card-header { padding:14px 18px; border-bottom:1px solid #f0e8e0; display:flex; align-items:center; gap:10px; }
-    .card-body { padding:18px; }
-    .pill { background:#f6efe8; color:#7a6c5c; padding:6px 10px; border-radius:999px; font-size:12px; }
-    label { display:block; font-size:13px; color:#6f6255; margin:10px 0 6px; }
-    input, select, textarea { width:100%; padding:12px 14px; border:1px solid #e1d7cd; border-radius:10px; outline:none; font-size:14px; }
-    input:focus, select:focus, textarea:focus { border-color:#b57a50; box-shadow:0 0 0 3px rgba(181,122,80,.15); }
-    .row { display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
-    @media(max-width:700px){ .row { grid-template-columns:1fr; } }
-    table { width:100%; border-collapse:collapse; }
-    th, td { padding:10px; text-align:center; border-bottom:1px dashed #efe6dd; }
-    th { background:#f6efe8; color:#4a3c2a; }
-    .total { text-align:right; font-weight:700; color:#3a3128; margin-top:10px; }
-    .btn { padding:12px 16px; border:none; border-radius:10px; cursor:pointer; font-weight:600; }
-    .btn-primary { background:linear-gradient(90deg,#b57a50,#8d5a3a); color:#fff; }
-    .btn-outline { background:#fff; border:1px solid #e1d7cd; }
-    .flex { display:flex; align-items:center; gap:10px; }
-    .icon { width:36px; height:36px; display:grid; place-items:center; border-radius:10px; background:#f6efe8; color:#8d5a3a; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Billing System</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<style>
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: #f7f3ef;
+}
+.container {
+    max-width: 1200px;
+    margin: 30px auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+.card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    padding: 20px;
+}
+.billing { flex: 1.2; }
+.summary { flex: 1; background: #f7f3ef; }
+h2 { margin-top: 0; color:#4a3c2a; }
+label { display:block; margin:10px 0 5px; font-size:14px; color:#6f6255; }
+input, select, textarea { width:100%; padding:10px; border-radius:8px; border:1px solid #e1d7cd; outline:none; font-size:14px; }
+input:focus, select:focus, textarea:focus { border-color:#b57a50; box-shadow:0 0 0 3px rgba(181,122,80,.15); }
+.btn { padding:12px 20px; border-radius:8px; cursor:pointer; border:none; font-weight:600; margin-top:10px; transition:0.3s; }
+.btn-primary { background: linear-gradient(90deg,#b57a50,#8d5a3a); color:#fff; }
+.btn-primary:hover { opacity:0.9; }
+table { width:100%; border-collapse: collapse; margin-top:10px; }
+th, td { padding:8px; text-align:center; border-bottom:1px dashed #ccc; }
+th { background:#f6efe8; color:#4a3c2a; }
+.product-img { width:50px; height:50px; object-fit:cover; border-radius:6px; }
+.remove-btn { cursor:pointer; color:red; font-size:14px; }
+.totals { margin-top:10px; text-align:right; }
+.totals div { margin:5px 0; font-weight:600; }
+.row { display:flex; gap:10px; }
+.row > div { flex:1; }
+@media(max-width:900px) {
+    .container { flex-direction: column; }
+    .row { flex-direction: column; }
+}
+</style>
 </head>
 <body>
-  <div class="container">
-    <div class="card">
-      <div class="card-header"><span class="icon"><i class="fas fa-receipt"></i></span><h3>Billing Details</h3><span class="pill">Secure • Encrypted</span></div>
-      <div class="card-body">
-        <div class="row">
-          <div>
-            <label for="customerName">Full Name</label>
-            <input type="text" id="customerName" placeholder="Enter full name" required>
-          </div>
-          <div>
-            <label for="customerPhone">Phone</label>
-            <input type="tel" id="customerPhone" placeholder="Enter phone" required>
-          </div>
-        </div>
-        <label for="customerAddress">Address</label>
-        <textarea id="customerAddress" rows="3" placeholder="House, street, city, PIN"></textarea>
-        <div class="row">
-          <div>
-            <label for="payment">Payment Method</label>
-            <select id="payment">
-              <option value="cod">Cash on Delivery</option>
-              <option value="card">Credit/Debit Card</option>
-              <option value="upi">UPI</option>
-            </select>
-          </div>
-          <div>
-            <label for="email">Email (for invoice)</label>
-            <input type="email" id="email" placeholder="name@example.com">
-          </div>
-        </div>
-        <div class="flex" style="margin-top:10px;">
-          <button class="btn btn-primary" onclick="generateBill()"><i class="fas fa-check"></i> Confirm Order</button>
-          <button class="btn btn-outline" onclick="window.history.back()"><i class="fas fa-arrow-left"></i> Back</button>
-        </div>
-      </div>
-    </div>
 
-    <div class="card">
-      <div class="card-header"><span class="icon"><i class="fas fa-cart-shopping"></i></span><h3>Order Summary</h3></div>
-      <div class="card-body">
-        <div class="row">
-          <div>
-            <label for="product">Product</label>
-            <select id="product">
-              <option value="Sofa" data-price="15000">Sofa - ₹15000</option>
-              <option value="Chair" data-price="2500">Chair - ₹2500</option>
-              <option value="Table" data-price="5000">Table - ₹5000</option>
-              <option value="Bed" data-price="20000">Bed - ₹20000</option>
-            </select>
-          </div>
-          <div>
-            <label for="quantity">Quantity</label>
-            <input type="number" id="quantity" min="1" value="1">
-          </div>
+<div class="container">
+
+<!-- Billing Details Card -->
+<div class="card billing">
+    <h2>Billing Details</h2>
+    <label>Full Name</label>
+    <input type="text" id="customerName" placeholder="Enter full name">
+    <label>Phone</label>
+    <input type="tel" id="customerPhone" placeholder="Enter phone">
+    <label>Address</label>
+    <textarea id="customerAddress" rows="3" placeholder="House, street, city, PIN"></textarea>
+    <label>Payment Method</label>
+    <select id="payment">
+        <option value="COD">Cash on Delivery</option>
+        <option value="Card">Credit/Debit Card</option>
+        <option value="UPI">UPI</option>
+    </select>
+
+    <h3 style="margin-top:20px;">Add Product</h3>
+    <div class="row">
+        <div>
+            <label>Product Name</label>
+            <input type="text" id="productName" placeholder="Enter product name">
         </div>
-        <div class="flex" style="margin:10px 0 6px"><button type="button" class="btn btn-outline" onclick="addProduct()"><i class="fas fa-plus"></i> Add Item</button></div>
-        <table id="billTable">
-          <thead>
+        <div>
+            <label>Price (₹)</label>
+            <input type="number" id="productPrice" placeholder="Enter price">
+        </div>
+        <div>
+            <label>Quantity</label>
+            <input type="number" id="productQty" value="1" min="1">
+        </div>
+    </div>
+    <button class="btn btn-primary" onclick="addProduct()">Add to Order</button>
+</div>
+
+<!-- Order Summary Card -->
+<div class="card summary">
+    <h2>Order Summary</h2>
+    <table id="billTable">
+        <thead>
             <tr>
-              <th>Product</th>
-              <th>Price (₹)</th>
-              <th>Qty</th>
-              <th>Total (₹)</th>
+                <th>Product</th>
+                <th>Price</th>
+                <th>Qty</th>
+                <th>Total</th>
+                <th>Remove</th>
             </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-        <div class="total" id="totalAmount">Total: ₹0</div>
-      </div>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <div class="totals">
+        <div id="subTotal">Subtotal: ₹0</div>
+        <div id="taxAmount">Tax (18% GST): ₹0</div>
+        <div id="deliveryCharges">Delivery: ₹200</div>
+        <div id="grandTotal"><strong>Grand Total: ₹0</strong></div>
+        <button class="btn btn-primary" style="width:100%; margin-top:15px;" onclick="generateBill()">Confirm Order</button>
     </div>
-  </div>
+</div>
 
-  <script>
-    let total = 0;
-    function addProduct() {
-      const productSelect = document.getElementById('product');
-      const productName = productSelect.value;
-      const productPrice = parseInt(productSelect.options[productSelect.selectedIndex].getAttribute('data-price')) || 0;
-      const quantity = parseInt(document.getElementById('quantity').value) || 1;
-      const totalPrice = productPrice * quantity;
-      const tableBody = document.querySelector('#billTable tbody');
-      const row = document.createElement('tr');
-      row.innerHTML = `<td>${productName}</td><td>${productPrice}</td><td>${quantity}</td><td>${totalPrice}</td>`;
-      tableBody.appendChild(row);
-      total += totalPrice;
-      document.getElementById('totalAmount').innerText = 'Total: ₹' + total;
-    }
-    function generateBill(){
-      const name = document.getElementById('customerName').value.trim();
-      const phone = document.getElementById('customerPhone').value.trim();
-      if(!name || !phone){ alert('Please fill customer details'); return; }
-      alert('Order confirmed for ' + name + ' • Total ₹' + total);
-    }
-  </script>
+</div>
+
+<script>
+let cart = [];
+const taxRate = 0.18;
+const delivery = 200;
+
+// Add product to cart
+function addProduct(){
+    const name = document.getElementById('productName').value.trim();
+    const price = parseInt(document.getElementById('productPrice').value) || 0;
+    const qty = parseInt(document.getElementById('productQty').value) || 1;
+    if(!name || price<=0){ alert("Please enter valid product details"); return; }
+
+    const existing = cart.find(item=>item.name===name);
+    if(existing){ existing.qty += qty; } 
+    else { cart.push({name, price, qty}); }
+
+    renderCart();
+    document.getElementById('productName').value='';
+    document.getElementById('productPrice').value='';
+    document.getElementById('productQty').value=1;
+}
+
+// Remove product
+function removeProduct(index){
+    cart.splice(index,1);
+    renderCart();
+}
+
+// Render cart table
+function renderCart(){
+    const tbody = document.querySelector('#billTable tbody');
+    tbody.innerHTML='';
+    let subtotal=0;
+    cart.forEach((item,index)=>{
+        const total = item.price*item.qty;
+        subtotal+=total;
+        const row = document.createElement('tr');
+        row.innerHTML=`
+            <td>${item.name}</td>
+            <td>₹${item.price}</td>
+            <td>${item.qty}</td>
+            <td>₹${total}</td>
+            <td><span class="remove-btn" onclick="removeProduct(${index})">X</span></td>
+        `;
+        tbody.appendChild(row);
+    });
+    const tax = Math.round(subtotal*taxRate);
+    const grand = subtotal + tax + delivery;
+    document.getElementById('subTotal').innerText=`Subtotal: ₹${subtotal}`;
+    document.getElementById('taxAmount').innerText=`Tax (18% GST): ₹${tax}`;
+    document.getElementById('deliveryCharges').innerText=`Delivery: ₹${delivery}`;
+    document.getElementById('grandTotal').innerHTML=`<strong>Grand Total: ₹${grand}</strong>`;
+}
+
+// Generate invoice
+function generateBill(){
+    const name = document.getElementById('customerName').value.trim();
+    const phone = document.getElementById('customerPhone').value.trim();
+    const address = document.getElementById('customerAddress').value.trim();
+    const payment = document.getElementById('payment').value;
+
+    if(!name || !phone){ alert("Please fill your details"); return; }
+    if(cart.length===0){ alert("Cart is empty!"); return; }
+
+    let subtotal=0;
+    cart.forEach(item=>subtotal+=item.price*item.qty);
+    const tax = Math.round(subtotal*taxRate);
+    const grand = subtotal + tax + delivery;
+
+    let orderDetails = cart.map(item=>`${item.name} (x${item.qty}) - ₹${item.price*item.qty}`).join("\n");
+
+    alert(`Order Confirmed!\n\nCustomer: ${name}\nPhone: ${phone}\nAddress: ${address}\nPayment: ${payment}\n\nItems:\n${orderDetails}\n\nSubtotal: ₹${subtotal}\nTax: ₹${tax}\nDelivery: ₹${delivery}\nGrand Total: ₹${grand}`);
+
+    cart=[];
+    renderCart();
+    document.getElementById('customerName').value='';
+    document.getElementById('customerPhone').value='';
+    document.getElementById('customerAddress').value='';
+}
+</script>
+
 </body>
 </html>
