@@ -238,16 +238,28 @@ def my_orders(request):
 # --------------------------
 # Buy Now view
 # --------------------------
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import Product, Cart, CartItem, Order, OrderItem
+
 @login_required(login_url='login')
 def buy_now(request, product_id):
     product = get_object_or_404(Product, id=product_id)
+
+    # Calculate billing values for template
+    subtotal = product.price
+    tax = round(subtotal * 0.18, 2)  # GST 18%
+    delivery = 50  # fixed delivery charge
+    total = round(subtotal + tax + delivery, 2)
+
     if request.method == 'POST':
         name = (request.POST.get('name') or '').strip()
         phone = (request.POST.get('phone') or '').strip()
         address = (request.POST.get('address') or '').strip()
         payment_method = (request.POST.get('payment_method') or 'cod')
 
-        # Create cart entry (kept for UX consistency)
+        # Create or update cart entry
         cart_obj, _ = Cart.objects.get_or_create(user=request.user)
         item, created = CartItem.objects.get_or_create(cart=cart_obj, product=product)
         if not created:
@@ -258,11 +270,10 @@ def buy_now(request, product_id):
         # Create Order and OrderItem
         customer = getattr(request.user, 'profile', None)
         if customer:
-            order = Order.objects.create(customer=customer)
+            order = Order.objects.create(customer=customer, total_amount=total)
             OrderItem.objects.create(order=order, product=product, quantity=1)
 
             if payment_method == 'upi':
-                # Redirect to pay page to initiate Razorpay UPI checkout
                 return redirect('pay_now', order_id=order.id)
 
             # Non-online: mark as pending and show success placeholder
@@ -272,8 +283,17 @@ def buy_now(request, product_id):
         messages.success(request, "Order info received.")
         return redirect('home')
 
-    # Legacy route should still show the form but NOT feel like a product page
-    return render(request, 'shop/buy_now.html', {'product': product})
+    # Pass billing values to template
+    context = {
+        'product': product,
+        'subtotal': subtotal,
+        'tax': tax,
+        'delivery': delivery,
+        'total': total
+    }
+
+    return render(request, 'shop/buy_now.html', context)
+
 
 # --------------------------
 # Payments (Razorpay)
