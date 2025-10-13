@@ -339,18 +339,49 @@ def payment_verify(request):
     return JsonResponse({'ok': True})
 
 
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from .models import Order, OrderItem, Cart
+
 @login_required(login_url='login')
 def pay_now(request, order_id):
-    order = get_object_or_404(Order, id=order_id)
-    # If already paid, go to success
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+
+    # If already paid, redirect to success
     if order.payment_status == 'Paid':
         return redirect('order_success', order_id=order.id)
-    # If order has no items, try to hydrate from cart for correct amount
-    if order.items.count() == 0 and request.user.is_authenticated:
+
+    # If order has no items, populate from cart
+    if order.items.count() == 0:
         cart_obj, _ = Cart.objects.get_or_create(user=request.user)
         for ci in cart_obj.items.select_related('product').all():
-            OrderItem.objects.get_or_create(order=order, product=ci.product, defaults={'quantity': ci.quantity})
-    return render(request, 'shop/pay_now.html', { 'order': order })
+            OrderItem.objects.get_or_create(
+                order=order,
+                product=ci.product,
+                defaults={'quantity': ci.quantity}
+            )
+
+    # Calculate billing
+    subtotal = sum(item.product.price * item.quantity for item in order.items.all())
+    tax = round(subtotal * 0.18, 2)  # GST 18%
+    delivery = 50 if subtotal > 0 else 0  # Optional: free delivery if subtotal > certain amount
+    total = round(subtotal + tax + delivery, 2)
+
+    # Update order total
+    order.total_amount = total
+    order.save()
+
+    context = {
+        'order': order,
+        'order_items': order.items.all(),
+        'subtotal': subtotal,
+        'tax': tax,
+        'delivery': delivery,
+        'total': total
+    }
+
+    return render(request, 'pay_now.html', context)
+
 
 # --------------------------
 # Add to Cart
