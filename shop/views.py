@@ -243,53 +243,91 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import Product, Cart, CartItem, Order, OrderItem
 
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import Product, Cart, CartItem, Order, OrderItem
+
 @login_required(login_url='login')
 def buy_now(request, product_id):
     product = get_object_or_404(Product, id=product_id)
 
     # Calculate billing values for template
-    subtotal = product.price
-    tax = round(subtotal * 0.18, 2)  # GST 18%
-    delivery = 50  # fixed delivery charge
-    total = round(subtotal + tax + delivery, 2)
+    from decimal import Decimal
+    quantity = 1  # default quantity
+    
+    # Get quantity from POST if available
+    if request.method == 'POST':
+        quantity = int(request.POST.get('quantity', 1))
+    
+    base_price = product.discounted_price()
+    subtotal = base_price * quantity
+    
+    # GST breakdown (18% total = 9% CGST + 9% SGST for intra-state)
+    cgst = round(float(subtotal) * 0.09, 2)
+    sgst = round(float(subtotal) * 0.09, 2)
+    total_gst = cgst + sgst
+    
+    # Extra charges
+    delivery_charge = Decimal('50.00')
+    packaging_charge = Decimal('25.00')
+    handling_charge = Decimal('15.00')
+    
+    # Calculate grand total
+    grand_total = round(float(subtotal) + total_gst + float(delivery_charge) + float(packaging_charge) + float(handling_charge), 2)
 
     if request.method == 'POST':
         name = (request.POST.get('name') or '').strip()
         phone = (request.POST.get('phone') or '').strip()
         address = (request.POST.get('address') or '').strip()
+        email = (request.POST.get('email') or '').strip()
         payment_method = (request.POST.get('payment_method') or 'cod')
+
+        # Validate required fields
+        if not name or not phone or not address:
+            messages.error(request, "Please fill in all required fields.")
+            return redirect('buy_now', product_id=product_id)
 
         # Create or update cart entry
         cart_obj, _ = Cart.objects.get_or_create(user=request.user)
         item, created = CartItem.objects.get_or_create(cart=cart_obj, product=product)
         if not created:
-            item.quantity += 1
+            item.quantity = quantity
+            item.save()
+        else:
+            item.quantity = quantity
             item.save()
         request.session['cart'] = {str(i.product.id): i.quantity for i in cart_obj.items.all()}
 
         # Create Order and OrderItem
         customer = getattr(request.user, 'profile', None)
         if customer:
-            order = Order.objects.create(customer=customer, total_amount=total)
-            OrderItem.objects.create(order=order, product=product, quantity=1)
+            order = Order.objects.create(customer=customer)
+            OrderItem.objects.create(order=order, product=product, quantity=quantity)
 
-            if payment_method == 'upi':
+            if payment_method == 'upi' or payment_method == 'card':
                 return redirect('pay_now', order_id=order.id)
 
             # Non-online: mark as pending and show success placeholder
-            messages.success(request, "Order placed successfully.")
+            messages.success(request, f"Order placed successfully! Order ID: #{order.id}")
             return redirect('order_success', order_id=order.id)
 
         messages.success(request, "Order info received.")
         return redirect('home')
 
-    # Pass billing values to template
+    # Pass comprehensive billing values to template
     context = {
         'product': product,
+        'quantity': quantity,
+        'base_price': base_price,
         'subtotal': subtotal,
-        'tax': tax,
-        'delivery': delivery,
-        'total': total
+        'cgst': cgst,
+        'sgst': sgst,
+        'total_gst': total_gst,
+        'delivery_charge': delivery_charge,
+        'packaging_charge': packaging_charge,
+        'handling_charge': handling_charge,
+        'grand_total': grand_total,
     }
 
     return render(request, 'shop/buy_now.html', context)
