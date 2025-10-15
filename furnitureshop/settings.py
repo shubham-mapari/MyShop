@@ -143,8 +143,8 @@ MESSAGE_TAGS = {
 # ==========================
 # In development, write emails to console. In production, use SMTP (e.g., Gmail app password).
 # Prefer real SMTP if credentials are provided; otherwise fall back to console
-EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="myfurnitureshop77@gmail.com")
-EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="dkvtgxfpqgaiwqug")
+EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="")
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="")
 
 if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

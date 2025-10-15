@@ -32,8 +32,8 @@ class Product(models.Model):
     )
     name = models.CharField(max_length=100)
     slug = models.SlugField(max_length=120, unique=True, blank=True)
-    price = models.CharField(max_length=50)
-    discount = models.PositiveIntegerField(default=0)  # 👈 integer discount (%)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    discount = models.PositiveIntegerField(default=0)  # integer discount (%)
     rating = models.DecimalField(max_digits=3, decimal_places=2, default=0)
     image = models.ImageField(upload_to='products/')
     description = models.TextField(blank=True, null=True)
@@ -51,17 +51,15 @@ class Product(models.Model):
         return f"{self.name} - ₹{self.price}"
 
     def discounted_price(self):
-        # Calculate discounted price safely even if price is stored as text
-        try:
-            base_price = int(self.price)
-        except (TypeError, ValueError):
-            return self.price
+        """Calculate discounted price based on discount percentage"""
         if self.discount > 0:
-            return base_price - (base_price * self.discount // 100)
-        return base_price
+            discount_amount = self.price * self.discount / 100
+            return self.price - discount_amount
+        return self.price
 
     def discounted_price_display(self):
-        return f"₹{self.discounted_price()}"
+        """Return formatted discounted price"""
+        return f"₹{self.discounted_price():.2f}"
 
 
 # ========================
@@ -185,11 +183,8 @@ class CartItem(models.Model):
         return f"{self.product.name} x {self.quantity}"
 
     def line_total(self):
-        try:
-            unit_price = int(self.product.price)
-        except (TypeError, ValueError):
-            unit_price = 0
-        return unit_price * self.quantity
+        """Calculate total price for this cart item"""
+        return self.product.price * self.quantity
 
 
 # ========================

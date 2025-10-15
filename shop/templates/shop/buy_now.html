@@ -1,66 +1,797 @@
 {% extends 'base.html' %}
 
-{% block title %}Buy Now{% endblock %}
+{% block title %}Checkout - Complete Your Order{% endblock %}
 
 {% block content %}
+<style>
+    :root {
+        --primary-wood: #b57a50;
+        --dark-wood: #8d5a3a;
+        --cream-bg: #f9f6f2;
+        --light-beige: #f4ede6;
+        --text-dark: #3a3128;
+        --success-green: #28a745;
+        --border-light: #e1d7cd;
+    }
 
-<div class="container my-4">
-  <h2 class="mb-4">Checkout</h2>
+    .checkout-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+    }
 
-  <div class="row g-4">
-    {% if product %}
-    <div class="col-md-5">
-      <div class="card shadow-sm">
-        <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}" style="object-fit:cover; max-height:280px;">
-        <div class="card-body">
-          <h5 class="card-title mb-2">{{ product.name }}</h5>
-          <p class="card-text fs-5 mb-0">Price: ₹{{ product.price }}</p>
-        </div>
-      </div>
+    .checkout-header {
+        text-align: center;
+        margin-bottom: 40px;
+        padding: 30px 20px;
+        background: linear-gradient(135deg, var(--primary-wood), var(--dark-wood));
+        border-radius: 16px;
+        color: white;
+        box-shadow: 0 8px 24px rgba(181, 122, 80, 0.3);
+    }
+
+    .checkout-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .checkout-header p {
+        font-size: 1.1rem;
+        opacity: 0.95;
+        margin: 0;
+    }
+
+    .checkout-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-bottom: 30px;
+    }
+
+    @media (max-width: 992px) {
+        .checkout-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .card-modern {
+        background: white;
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 1px solid var(--border-light);
+    }
+
+    .card-modern:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    }
+
+    .card-header-custom {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid var(--light-beige);
+    }
+
+    .card-header-custom i {
+        font-size: 1.5rem;
+        color: var(--primary-wood);
+    }
+
+    .card-header-custom h3 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+
+    .product-showcase {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 25px;
+        padding: 20px;
+        background: var(--cream-bg);
+        border-radius: 12px;
+    }
+
+    .product-image-wrapper {
+        flex-shrink: 0;
+        width: 180px;
+        height: 180px;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .product-image-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .product-image-wrapper:hover img {
+        transform: scale(1.05);
+    }
+
+    .product-details {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .product-name {
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 10px;
+    }
+
+    .product-price {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--primary-wood);
+        margin-bottom: 8px;
+    }
+
+    .product-original-price {
+        font-size: 1.1rem;
+        color: #999;
+        text-decoration: line-through;
+        margin-left: 10px;
+    }
+
+    .discount-badge {
+        display: inline-block;
+        background: var(--success-green);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-top: 8px;
+    }
+
+    .quantity-selector {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin: 20px 0;
+        padding: 15px;
+        background: white;
+        border-radius: 10px;
+        border: 2px solid var(--border-light);
+    }
+
+    .quantity-selector label {
+        font-weight: 600;
+        color: var(--text-dark);
+        margin: 0;
+    }
+
+    .quantity-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .qty-btn {
+        width: 36px;
+        height: 36px;
+        border: 2px solid var(--primary-wood);
+        background: white;
+        color: var(--primary-wood);
+        border-radius: 8px;
+        font-size: 1.2rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .qty-btn:hover {
+        background: var(--primary-wood);
+        color: white;
+        transform: scale(1.05);
+    }
+
+    .qty-input {
+        width: 60px;
+        height: 36px;
+        text-align: center;
+        border: 2px solid var(--border-light);
+        border-radius: 8px;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    .billing-table {
+        width: 100%;
+        margin: 20px 0;
+    }
+
+    .billing-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--light-beige);
+    }
+
+    .billing-row:last-child {
+        border-bottom: none;
+    }
+
+    .billing-label {
+        font-weight: 500;
+        color: #666;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .billing-label i {
+        color: var(--primary-wood);
+        font-size: 0.9rem;
+    }
+
+    .billing-value {
+        font-weight: 600;
+        color: var(--text-dark);
+        font-size: 1.05rem;
+    }
+
+    .billing-section {
+        margin: 25px 0;
+        padding: 20px;
+        background: var(--cream-bg);
+        border-radius: 12px;
+        border-left: 4px solid var(--primary-wood);
+    }
+
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .section-title i {
+        color: var(--primary-wood);
+    }
+
+    .grand-total-row {
+        background: linear-gradient(135deg, var(--primary-wood), var(--dark-wood));
+        color: white;
+        padding: 20px;
+        border-radius: 12px;
+        margin-top: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 4px 16px rgba(181, 122, 80, 0.3);
+    }
+
+    .grand-total-row .billing-label {
+        color: white;
+        font-size: 1.3rem;
+        font-weight: 700;
+    }
+
+    .grand-total-row .billing-value {
+        color: white;
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 8px;
+        font-size: 0.95rem;
+    }
+
+    .form-label .required {
+        color: #dc3545;
+        margin-left: 4px;
+    }
+
+    .form-control-modern {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid var(--border-light);
+        border-radius: 10px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+    .form-control-modern:focus {
+        outline: none;
+        border-color: var(--primary-wood);
+        box-shadow: 0 0 0 4px rgba(181, 122, 80, 0.1);
+    }
+
+    .payment-methods {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+    }
+
+    .payment-option {
+        position: relative;
+    }
+
+    .payment-option input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+    }
+
+    .payment-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        border: 2px solid var(--border-light);
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: white;
+        height: 100%;
+    }
+
+    .payment-card i {
+        font-size: 2rem;
+        margin-bottom: 10px;
+        color: var(--primary-wood);
+    }
+
+    .payment-card span {
+        font-weight: 600;
+        color: var(--text-dark);
+        font-size: 0.9rem;
+    }
+
+    .payment-option input[type="radio"]:checked + .payment-card {
+        border-color: var(--primary-wood);
+        background: linear-gradient(135deg, rgba(181, 122, 80, 0.1), rgba(141, 90, 58, 0.1));
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(181, 122, 80, 0.2);
+    }
+
+    .btn-confirm-order {
+        width: 100%;
+        padding: 16px;
+        background: linear-gradient(135deg, var(--success-green), #218838);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1.2rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 16px rgba(40, 167, 69, 0.3);
+        margin-top: 25px;
+    }
+
+    .btn-confirm-order:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+    }
+
+    .btn-confirm-order:active {
+        transform: translateY(0);
+    }
+
+    .secure-badge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 15px;
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .secure-badge i {
+        color: var(--success-green);
+    }
+
+    @media (max-width: 768px) {
+        .product-showcase {
+            flex-direction: column;
+        }
+
+        .product-image-wrapper {
+            width: 100%;
+            height: 250px;
+        }
+
+        .checkout-header h1 {
+            font-size: 1.8rem;
+        }
+
+        .payment-methods {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .info-tooltip {
+        display: inline-block;
+        width: 18px;
+        height: 18px;
+        background: var(--primary-wood);
+        color: white;
+        border-radius: 50%;
+        text-align: center;
+        font-size: 0.75rem;
+        line-height: 18px;
+        cursor: help;
+        margin-left: 5px;
+    }
+
+    .savings-highlight {
+        background: #d4edda;
+        color: #155724;
+        padding: 12px;
+        border-radius: 8px;
+        margin: 15px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 600;
+    }
+
+    .savings-highlight i {
+        font-size: 1.2rem;
+    }
+</style>
+
+<div class="checkout-container">
+    <!-- Header -->
+    <div class="checkout-header">
+        <h1><i class="fas fa-shopping-bag"></i> Complete Your Order</h1>
+        <p>Review your order details and provide shipping information</p>
     </div>
-    {% endif %}
 
-    <div class="col-md-7">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title">Billing Details</h5>
-          <form method="post">
-            {% csrf_token %}
+    <form method="post" id="checkoutForm">
+        {% csrf_token %}
+        <input type="hidden" name="quantity" id="hidden_quantity" value="{{ quantity }}">
+        <input type="hidden" name="total_amount" id="hidden_total" value="{{ grand_total }}">
 
-            <div class="mb-3">
-              <label for="bn_name" class="form-label">Full Name</label>
-              <input type="text" class="form-control" id="bn_name" name="name" value="{{ request.user.get_full_name|default:request.user.username }}" required>
+        <div class="checkout-grid">
+            <!-- Left Column: Product & Billing Summary -->
+            <div>
+                <!-- Product Information -->
+                <div class="card-modern">
+                    <div class="card-header-custom">
+                        <i class="fas fa-box-open"></i>
+                        <h3>Order Details</h3>
+                    </div>
+
+                    <div class="product-showcase">
+                        <div class="product-image-wrapper">
+                            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                        </div>
+                        <div class="product-details">
+                            <div class="product-name">{{ product.name }}</div>
+                            <div>
+                                <span class="product-price">₹{{ product.discounted_price|floatformat:2 }}</span>
+                                {% if product.discount > 0 %}
+                                    <span class="product-original-price">₹{{ product.price }}</span>
+                                    <div class="discount-badge">
+                                        <i class="fas fa-tag"></i> {{ product.discount }}% OFF
+                                    </div>
+                                {% endif %}
+                            </div>
+                            {% if product.description %}
+                            <p style="color: #666; font-size: 0.9rem; margin-top: 10px;">
+                                {{ product.description|truncatewords:20 }}
+                            </p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Quantity Selector -->
+                    <div class="quantity-selector">
+                        <label>Quantity:</label>
+                        <div class="quantity-controls">
+                            <button type="button" class="qty-btn" onclick="updateQuantity(-1)">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <input type="number" id="quantity" class="qty-input" value="{{ quantity }}" min="1" max="10" readonly>
+                            <button type="button" class="qty-btn" onclick="updateQuantity(1)">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    {% if product.discount > 0 %}
+                    <div class="savings-highlight">
+                        <i class="fas fa-piggy-bank"></i>
+                        <span>You're saving ₹{{ product.price|floatformat:2|add:"-"|add:product.discounted_price|floatformat:2 }} on this purchase!</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Billing Summary -->
+                <div class="card-modern" style="margin-top: 30px;">
+                    <div class="card-header-custom">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                        <h3>Billing Summary</h3>
+                    </div>
+
+                    <div class="billing-table">
+                        <div class="billing-row">
+                            <span class="billing-label">
+                                <i class="fas fa-shopping-cart"></i>
+                                Subtotal (<span id="display_qty">{{ quantity }}</span> item<span id="plural_s">{% if quantity > 1 %}s{% endif %}</span>)
+                            </span>
+                            <span class="billing-value" id="display_subtotal">₹{{ subtotal|floatformat:2 }}</span>
+                        </div>
+                    </div>
+
+                    <!-- GST Section -->
+                    <div class="billing-section">
+                        <div class="section-title">
+                            <i class="fas fa-percent"></i>
+                            GST Breakdown (18%)
+                        </div>
+                        <div class="billing-table">
+                            <div class="billing-row">
+                                <span class="billing-label">CGST (9%)</span>
+                                <span class="billing-value" id="display_cgst">₹{{ cgst|floatformat:2 }}</span>
+                            </div>
+                            <div class="billing-row">
+                                <span class="billing-label">SGST (9%)</span>
+                                <span class="billing-value" id="display_sgst">₹{{ sgst|floatformat:2 }}</span>
+                            </div>
+                            <div class="billing-row" style="border-top: 2px solid var(--primary-wood); padding-top: 12px; margin-top: 8px;">
+                                <span class="billing-label" style="font-weight: 700;">Total GST</span>
+                                <span class="billing-value" id="display_total_gst">₹{{ total_gst|floatformat:2 }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Extra Charges Section -->
+                    <div class="billing-section">
+                        <div class="section-title">
+                            <i class="fas fa-truck"></i>
+                            Additional Charges
+                        </div>
+                        <div class="billing-table">
+                            <div class="billing-row">
+                                <span class="billing-label">
+                                    <i class="fas fa-shipping-fast"></i>
+                                    Delivery Charge
+                                </span>
+                                <span class="billing-value">₹{{ delivery_charge|floatformat:2 }}</span>
+                            </div>
+                            <div class="billing-row">
+                                <span class="billing-label">
+                                    <i class="fas fa-box"></i>
+                                    Packaging Charge
+                                </span>
+                                <span class="billing-value">₹{{ packaging_charge|floatformat:2 }}</span>
+                            </div>
+                            <div class="billing-row">
+                                <span class="billing-label">
+                                    <i class="fas fa-hands-helping"></i>
+                                    Handling Charge
+                                </span>
+                                <span class="billing-value">₹{{ handling_charge|floatformat:2 }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Grand Total -->
+                    <div class="grand-total-row">
+                        <span class="billing-label">
+                            <i class="fas fa-receipt"></i>
+                            GRAND TOTAL
+                        </span>
+                        <span class="billing-value" id="display_grand_total">₹{{ grand_total|floatformat:2 }}</span>
+                    </div>
+                </div>
             </div>
 
-            <div class="mb-3">
-              <label for="bn_phone" class="form-label">Phone</label>
-              <input type="tel" class="form-control" id="bn_phone" name="phone" value="{{ request.user.profile.mobile_number }}" required>
-            </div>
+            <!-- Right Column: Billing Details Form -->
+            <div>
+                <div class="card-modern">
+                    <div class="card-header-custom">
+                        <i class="fas fa-user-circle"></i>
+                        <h3>Billing & Shipping Details</h3>
+                    </div>
 
-            <div class="mb-3">
-              <label for="bn_address" class="form-label">Address</label>
-              <textarea class="form-control" id="bn_address" name="address" rows="3" required>{{ request.user.profile.address }}</textarea>
-            </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            Full Name <span class="required">*</span>
+                        </label>
+                        <input type="text" name="name" class="form-control-modern" 
+                               value="{{ request.user.get_full_name|default:request.user.username }}" 
+                               placeholder="Enter your full name" required>
+                    </div>
 
-            <div class="mb-3">
-              <label for="bn_payment" class="form-label">Payment Method</label>
-              <select class="form-select" id="bn_payment" name="payment_method" required>
-                <option value="cod">Cash on Delivery</option>
-                <option value="card">Credit/Debit Card</option>
-                <option value="upi">UPI</option>
-              </select>
-            </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            Phone Number <span class="required">*</span>
+                        </label>
+                        <input type="tel" name="phone" class="form-control-modern" 
+                               value="{{ request.user.profile.mobile_number|default:'' }}" 
+                               placeholder="Enter 10-digit mobile number" 
+                               pattern="[0-9]{10}" required>
+                    </div>
 
-            <button type="submit" class="btn btn-primary">Confirm Order</button>
-          </form>
+                    <div class="form-group">
+                        <label class="form-label">
+                            Email Address
+                        </label>
+                        <input type="email" name="email" class="form-control-modern" 
+                               value="{{ request.user.email|default:'' }}" 
+                               placeholder="your.email@example.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            Shipping Address <span class="required">*</span>
+                        </label>
+                        <textarea name="address" class="form-control-modern" rows="4" 
+                                  placeholder="House No., Street, Landmark, City, State, PIN Code" 
+                                  required>{{ request.user.profile.address|default:'' }}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            Payment Method <span class="required">*</span>
+                        </label>
+                        <div class="payment-methods">
+                            <div class="payment-option">
+                                <input type="radio" name="payment_method" value="cod" id="payment_cod" checked>
+                                <label for="payment_cod" class="payment-card">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                    <span>Cash on Delivery</span>
+                                </label>
+                            </div>
+                            <div class="payment-option">
+                                <input type="radio" name="payment_method" value="card" id="payment_card">
+                                <label for="payment_card" class="payment-card">
+                                    <i class="fas fa-credit-card"></i>
+                                    <span>Credit/Debit Card</span>
+                                </label>
+                            </div>
+                            <div class="payment-option">
+                                <input type="radio" name="payment_method" value="upi" id="payment_upi">
+                                <label for="payment_upi" class="payment-card">
+                                    <i class="fas fa-mobile-alt"></i>
+                                    <span>UPI Payment</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-confirm-order">
+                        <i class="fas fa-check-circle"></i> Confirm Order
+                    </button>
+
+                    <div class="secure-badge">
+                        <i class="fas fa-lock"></i>
+                        <span>Secure checkout - Your information is protected</span>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-  </div>
+    </form>
 </div>
 
+<script>
+    // Billing calculation constants
+    const BASE_PRICE = parseFloat('{{ base_price }}');
+    const GST_RATE = 0.18;
+    const DELIVERY_CHARGE = parseFloat('{{ delivery_charge }}');
+    const PACKAGING_CHARGE = parseFloat('{{ packaging_charge }}');
+    const HANDLING_CHARGE = parseFloat('{{ handling_charge }}');
+
+    // Update quantity
+    function updateQuantity(change) {
+        const qtyInput = document.getElementById('quantity');
+        let currentQty = parseInt(qtyInput.value);
+        let newQty = currentQty + change;
+        
+        // Validate quantity (min 1, max 10)
+        if (newQty < 1) newQty = 1;
+        if (newQty > 10) {
+            alert('Maximum quantity allowed is 10');
+            return;
+        }
+        
+        qtyInput.value = newQty;
+        updateBilling(newQty);
+    }
+
+    // Update all billing calculations
+    function updateBilling(quantity) {
+        // Calculate subtotal
+        const subtotal = BASE_PRICE * quantity;
+        
+        // Calculate GST
+        const cgst = subtotal * 0.09;
+        const sgst = subtotal * 0.09;
+        const totalGst = cgst + sgst;
+        
+        // Calculate grand total
+        const grandTotal = subtotal + totalGst + parseFloat(DELIVERY_CHARGE) + 
+                          parseFloat(PACKAGING_CHARGE) + parseFloat(HANDLING_CHARGE);
+        
+        // Update display
+        document.getElementById('display_qty').textContent = quantity;
+        document.getElementById('plural_s').textContent = quantity > 1 ? 's' : '';
+        document.getElementById('display_subtotal').textContent = '₹' + subtotal.toFixed(2);
+        document.getElementById('display_cgst').textContent = '₹' + cgst.toFixed(2);
+        document.getElementById('display_sgst').textContent = '₹' + sgst.toFixed(2);
+        document.getElementById('display_total_gst').textContent = '₹' + totalGst.toFixed(2);
+        document.getElementById('display_grand_total').textContent = '₹' + grandTotal.toFixed(2);
+        
+        // Update hidden form fields
+        document.getElementById('hidden_quantity').value = quantity;
+        document.getElementById('hidden_total').value = grandTotal.toFixed(2);
+    }
+
+    // Form validation
+    document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+        const phone = document.querySelector('input[name="phone"]').value;
+        const address = document.querySelector('textarea[name="address"]').value;
+        const name = document.querySelector('input[name="name"]').value;
+        
+        if (!name.trim()) {
+            e.preventDefault();
+            alert('Please enter your full name');
+            return false;
+        }
+        
+        if (!/^[0-9]{10}$/.test(phone)) {
+            e.preventDefault();
+            alert('Please enter a valid 10-digit phone number');
+            return false;
+        }
+        
+        if (!address.trim() || address.trim().length < 10) {
+            e.preventDefault();
+            alert('Please enter a complete shipping address');
+            return false;
+        }
+        
+        // Show loading state
+        const btn = document.querySelector('.btn-confirm-order');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing Order...';
+        btn.disabled = true;
+    });
+
+    // Initialize quantity input listener
+    document.getElementById('quantity').addEventListener('change', function() {
+        let qty = parseInt(this.value);
+        if (isNaN(qty) || qty < 1) qty = 1;
+        if (qty > 10) qty = 10;
+        this.value = qty;
+        updateBilling(qty);
+    });
+</script>
+
 {% endblock %}
-
-
-
-

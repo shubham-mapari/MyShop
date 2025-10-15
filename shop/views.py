@@ -238,20 +238,59 @@ def my_orders(request):
 # --------------------------
 # Buy Now view
 # --------------------------
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import Product, Cart, CartItem, Order, OrderItem
+
 @login_required(login_url='login')
 def buy_now(request, product_id):
     product = get_object_or_404(Product, id=product_id)
+
+    # Calculate billing values for template
+    from decimal import Decimal
+    quantity = 1  # default quantity
+    
+    # Get quantity from POST if available
+    if request.method == 'POST':
+        quantity = int(request.POST.get('quantity', 1))
+    
+    base_price = product.discounted_price()
+    subtotal = base_price * quantity
+    
+    # GST breakdown (18% total = 9% CGST + 9% SGST for intra-state)
+    cgst = round(float(subtotal) * 0.09, 2)
+    sgst = round(float(subtotal) * 0.09, 2)
+    total_gst = cgst + sgst
+    
+    # Extra charges
+    delivery_charge = Decimal('50.00')
+    packaging_charge = Decimal('25.00')
+    handling_charge = Decimal('15.00')
+    
+    # Calculate grand total
+    grand_total = round(float(subtotal) + total_gst + float(delivery_charge) + float(packaging_charge) + float(handling_charge), 2)
+
     if request.method == 'POST':
         name = (request.POST.get('name') or '').strip()
         phone = (request.POST.get('phone') or '').strip()
         address = (request.POST.get('address') or '').strip()
+        email = (request.POST.get('email') or '').strip()
         payment_method = (request.POST.get('payment_method') or 'cod')
 
-        # Create cart entry (kept for UX consistency)
+        # Validate required fields
+        if not name or not phone or not address:
+            messages.error(request, "Please fill in all required fields.")
+            return redirect('buy_now', product_id=product_id)
+
+        # Create or update cart entry
         cart_obj, _ = Cart.objects.get_or_create(user=request.user)
         item, created = CartItem.objects.get_or_create(cart=cart_obj, product=product)
         if not created:
-            item.quantity += 1
+            item.quantity = quantity
+            item.save()
+        else:
+            item.quantity = quantity
             item.save()
         request.session['cart'] = {str(i.product.id): i.quantity for i in cart_obj.items.all()}
 
@@ -259,21 +298,35 @@ def buy_now(request, product_id):
         customer = getattr(request.user, 'profile', None)
         if customer:
             order = Order.objects.create(customer=customer)
-            OrderItem.objects.create(order=order, product=product, quantity=1)
+            OrderItem.objects.create(order=order, product=product, quantity=quantity)
 
-            if payment_method == 'upi':
-                # Redirect to pay page to initiate Razorpay UPI checkout
+            if payment_method == 'upi' or payment_method == 'card':
                 return redirect('pay_now', order_id=order.id)
 
             # Non-online: mark as pending and show success placeholder
-            messages.success(request, "Order placed successfully.")
+            messages.success(request, f"Order placed successfully! Order ID: #{order.id}")
             return redirect('order_success', order_id=order.id)
 
         messages.success(request, "Order info received.")
         return redirect('home')
 
-    # Legacy route should still show the form but NOT feel like a product page
-    return render(request, 'shop/buy_now.html', {'product': product})
+    # Pass comprehensive billing values to template
+    context = {
+        'product': product,
+        'quantity': quantity,
+        'base_price': base_price,
+        'subtotal': subtotal,
+        'cgst': cgst,
+        'sgst': sgst,
+        'total_gst': total_gst,
+        'delivery_charge': delivery_charge,
+        'packaging_charge': packaging_charge,
+        'handling_charge': handling_charge,
+        'grand_total': grand_total,
+    }
+
+    return render(request, 'shop/buy_now.html', context)
+
 
 # --------------------------
 # Payments (Razorpay)
@@ -287,12 +340,31 @@ def payment_create(request, order_id):
         for ci in cart_obj.items.select_related('product').all():
             OrderItem.objects.get_or_create(order=order, product=ci.product, defaults={'quantity': ci.quantity})
 
-    amount_rupees = max(order.total_price(), 1)
+    # Check if Razorpay keys are configured
+    if not settings.RAZORPAY_KEY_ID or not settings.RAZORPAY_KEY_SECRET:
+        return JsonResponse({
+            'ok': False, 
+            'message': 'Payment gateway not configured. Please contact administrator.'
+        }, status=400)
+
+    amount_rupees = max(int(order.total_price()), 1)
     amount_paise = amount_rupees * 100
+    
     try:
         client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
-        rp_order = client.order.create(dict(amount=amount_paise, currency='INR', payment_capture=1))
-        Payment.objects.create(order=order, razorpay_order_id=rp_order['id'], amount=amount_rupees, status=rp_order.get('status','created'))
+        rp_order = client.order.create(dict(
+            amount=amount_paise, 
+            currency='INR', 
+            payment_capture=1
+        ))
+        
+        Payment.objects.create(
+            order=order, 
+            razorpay_order_id=rp_order['id'], 
+            amount=amount_rupees, 
+            status=rp_order.get('status', 'created')
+        )
+        
         data = {
             'ok': True,
             'key': settings.RAZORPAY_KEY_ID,
@@ -301,22 +373,52 @@ def payment_create(request, order_id):
             'name': 'Furniture Shop',
             'description': f'Order #{order.id}',
             'order_id': rp_order['id'],
-            'prefill': { 'name': request.user.get_full_name() or request.user.username, 'email': request.user.email },
-            'notes': { 'order_id': str(order.id) },
-            'theme': { 'color': '#b57a50' }
+            'prefill': {
+                'name': request.user.get_full_name() or request.user.username, 
+                'email': request.user.email or ''
+            },
+            'notes': {'order_id': str(order.id)},
+            'theme': {'color': '#b57a50'}
         }
         return JsonResponse(data)
+    except razorpay.errors.BadRequestError as e:
+        return JsonResponse({
+            'ok': False, 
+            'message': 'Invalid payment request. Please try again.',
+            'detail': str(e)[:200]
+        }, status=400)
     except Exception as e:
-        return JsonResponse({'ok': False, 'message': 'Payment gateway initialization failed. Please check API keys or network.', 'detail': str(e)[:200]}, status=400)
+        return JsonResponse({
+            'ok': False, 
+            'message': 'Payment gateway error. Please try again later.',
+            'detail': str(e)[:200]
+        }, status=500)
 
 @csrf_exempt
 def payment_verify(request):
+    """Verify Razorpay payment signature"""
     if request.method != 'POST':
-        return JsonResponse({'ok': False}, status=400)
+        return JsonResponse({'ok': False, 'message': 'Invalid request method'}, status=400)
+    
     payload = request.POST
     rp_order_id = payload.get('razorpay_order_id')
     rp_payment_id = payload.get('razorpay_payment_id')
     rp_signature = payload.get('razorpay_signature')
+    
+    # Validate required fields
+    if not all([rp_order_id, rp_payment_id, rp_signature]):
+        return JsonResponse({
+            'ok': False, 
+            'message': 'Missing payment details'
+        }, status=400)
+    
+    # Check if Razorpay keys are configured
+    if not settings.RAZORPAY_KEY_ID or not settings.RAZORPAY_KEY_SECRET:
+        return JsonResponse({
+            'ok': False, 
+            'message': 'Payment gateway not configured'
+        }, status=400)
+    
     try:
         client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
         client.utility.verify_payment_signature({
@@ -324,19 +426,36 @@ def payment_verify(request):
             'razorpay_payment_id': rp_payment_id,
             'razorpay_signature': rp_signature
         })
-    except Exception:
-        Payment.objects.filter(razorpay_order_id=rp_order_id).update(razorpay_payment_id=rp_payment_id, razorpay_signature=rp_signature, status='failed')
-        return JsonResponse({'ok': False, 'message': 'Verification failed'})
+    except razorpay.errors.SignatureVerificationError:
+        # Update payment status to failed
+        Payment.objects.filter(razorpay_order_id=rp_order_id).update(
+            razorpay_payment_id=rp_payment_id, 
+            razorpay_signature=rp_signature, 
+            status='failed'
+        )
+        return JsonResponse({'ok': False, 'message': 'Payment verification failed'}, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'ok': False, 
+            'message': 'Verification error',
+            'detail': str(e)[:200]
+        }, status=500)
+    
+    # Find and update payment
     payment = Payment.objects.filter(razorpay_order_id=rp_order_id).select_related('order').first()
     if not payment:
-        return JsonResponse({'ok': False, 'message': 'Payment not found'})
+        return JsonResponse({'ok': False, 'message': 'Payment record not found'}, status=404)
+    
+    # Update payment and order status
     payment.razorpay_payment_id = rp_payment_id
     payment.razorpay_signature = rp_signature
     payment.status = 'paid'
     payment.save()
+    
     payment.order.payment_status = 'Paid'
     payment.order.save()
-    return JsonResponse({'ok': True})
+    
+    return JsonResponse({'ok': True, 'message': 'Payment verified successfully'})
 
 
 @login_required(login_url='login')
@@ -384,12 +503,8 @@ def cart_view(request):
     total = 0
     for item in items:
         product = item.product
-        try:
-            unit_price = int(product.price)
-        except (TypeError, ValueError):
-            unit_price = 0
         product.qty = item.quantity
-        product.total_price = unit_price * item.quantity
+        product.total_price = product.price * item.quantity
         products.append(product)
         total += product.total_price
 
