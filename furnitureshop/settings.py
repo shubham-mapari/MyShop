@@ -13,11 +13,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config("SECRET_KEY", default="insecure-key")
 DEBUG = config("DEBUG", default=True, cast=bool)
 ALLOWED_HOSTS = [
-    'myfurnitureshop.onrender.com',
     'localhost',
     '127.0.0.1'
 ]
-
+# Optional: CSRF trusted origins (comma-separated full URLs). Needed when using ngrok/public tunnels.
 _csrf_origins = config("CSRF_TRUSTED_ORIGINS", default="").split(",")
 CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_origins if o.strip()]
 
@@ -141,22 +140,13 @@ MESSAGE_TAGS = {
 # ==========================
 # Email Configuration
 # ==========================
-# In development, write emails to console. In production, use SMTP (e.g., Gmail app password).
-# Prefer real SMTP if credentials are provided; otherwise fall back to console
-EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="")
-EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="")
-
-if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST = 'smtp.gmail.com'
-    EMAIL_PORT = 587
-    EMAIL_USE_TLS = True
-    DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-    SERVER_EMAIL = EMAIL_HOST_USER
-else:
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-    DEFAULT_FROM_EMAIL = 'no-reply@localhost'
-
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'myfurnitureshop77@gmail.com'
+EMAIL_HOST_PASSWORD = 'dkvtgxfpqgaiwqug'
+DEFAULT_FROM_EMAIL = 'myfurnitureshop77@gmail.com'
 EMAIL_TIMEOUT = 10
 
 # ==========================

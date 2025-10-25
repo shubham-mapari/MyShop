@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'shop/base.html' %}
 
 {% block title %}Checkout - Complete Your Order{% endblock %}
 
@@ -487,9 +487,14 @@
                         <h3>Order Details</h3>
                     </div>
 
+                    {% if product %}
                     <div class="product-showcase">
                         <div class="product-image-wrapper">
-                            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                            {% if product.image %}
+                                <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                            {% else %}
+                                <img src="/static/images/no-image.png" alt="No Image Available">
+                            {% endif %}
                         </div>
                         <div class="product-details">
                             <div class="product-name">{{ product.name }}</div>
@@ -503,12 +508,51 @@
                                 {% endif %}
                             </div>
                             {% if product.description %}
-                            <p style="color: #666; font-size: 0.9rem; margin-top: 10px;">
-                                {{ product.description|truncatewords:20 }}
-                            </p>
+                            <div style="margin-top: 10px;">
+                                <strong>Description:</strong> {{ product.description }}
+                            </div>
                             {% endif %}
+                            {% if product.rating %}
+                            <div style="margin-top: 10px;">
+                                <strong>Rating:</strong>
+                                <span class="stars">
+                                    {% for i in "12345"|make_list %}
+                                        {% if forloop.counter <= product.rating %}
+                                            ★
+                                        {% else %}
+                                            ☆
+                                        {% endif %}
+                                    {% endfor %}
+                                </span>
+                                ({{ product.rating }})
+                            </div>
+                            {% endif %}
+                            <div class="product-meta">
+                                <div class="meta-item">
+                                    <span class="meta-label">Product ID:</span>
+                                    <span class="meta-value">{{ product.id }}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label">Category:</span>
+                                    <span class="meta-value">{{ product.category.name }}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label">Added:</span>
+                                    <span class="meta-value">{{ product.created_at|date:"M d, Y" }}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
+                    {% else %}
+                    <div class="product-showcase">
+                        <div class="product-details">
+                            <div class="product-name">No Product Selected</div>
+                            <p style="color: #666; font-size: 0.9rem; margin-top: 10px;">
+                                Please select a product to proceed with checkout.
+                            </p>
+                        </div>
+                    </div>
+                    {% endif %}
 
                     <!-- Quantity Selector -->
                     <div class="quantity-selector">
@@ -701,6 +745,7 @@
     </form>
 </div>
 
+{% if product %}
 <script>
     // Billing calculation constants
     const BASE_PRICE = parseFloat('{{ base_price }}');
@@ -714,14 +759,14 @@
         const qtyInput = document.getElementById('quantity');
         let currentQty = parseInt(qtyInput.value);
         let newQty = currentQty + change;
-        
+
         // Validate quantity (min 1, max 10)
         if (newQty < 1) newQty = 1;
         if (newQty > 10) {
             alert('Maximum quantity allowed is 10');
             return;
         }
-        
+
         qtyInput.value = newQty;
         updateBilling(newQty);
     }
@@ -730,16 +775,16 @@
     function updateBilling(quantity) {
         // Calculate subtotal
         const subtotal = BASE_PRICE * quantity;
-        
+
         // Calculate GST
         const cgst = subtotal * 0.09;
         const sgst = subtotal * 0.09;
         const totalGst = cgst + sgst;
-        
+
         // Calculate grand total
-        const grandTotal = subtotal + totalGst + parseFloat(DELIVERY_CHARGE) + 
+        const grandTotal = subtotal + totalGst + parseFloat(DELIVERY_CHARGE) +
                           parseFloat(PACKAGING_CHARGE) + parseFloat(HANDLING_CHARGE);
-        
+
         // Update display
         document.getElementById('display_qty').textContent = quantity;
         document.getElementById('plural_s').textContent = quantity > 1 ? 's' : '';
@@ -748,7 +793,7 @@
         document.getElementById('display_sgst').textContent = '₹' + sgst.toFixed(2);
         document.getElementById('display_total_gst').textContent = '₹' + totalGst.toFixed(2);
         document.getElementById('display_grand_total').textContent = '₹' + grandTotal.toFixed(2);
-        
+
         // Update hidden form fields
         document.getElementById('hidden_quantity').value = quantity;
         document.getElementById('hidden_total').value = grandTotal.toFixed(2);
@@ -759,25 +804,25 @@
         const phone = document.querySelector('input[name="phone"]').value;
         const address = document.querySelector('textarea[name="address"]').value;
         const name = document.querySelector('input[name="name"]').value;
-        
+
         if (!name.trim()) {
             e.preventDefault();
             alert('Please enter your full name');
             return false;
         }
-        
+
         if (!/^[0-9]{10}$/.test(phone)) {
             e.preventDefault();
             alert('Please enter a valid 10-digit phone number');
             return false;
         }
-        
+
         if (!address.trim() || address.trim().length < 10) {
             e.preventDefault();
             alert('Please enter a complete shipping address');
             return false;
         }
-        
+
         // Show loading state
         const btn = document.querySelector('.btn-confirm-order');
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing Order...';
@@ -793,5 +838,7 @@
         updateBilling(qty);
     });
 </script>
-
+{% endif %}
 {% endblock %}
+
+

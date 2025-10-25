@@ -1,0 +1,320 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }} - Product Details{% endblock %}
+
+{% block content %}
+<style>
+    .product-detail-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .product-detail-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+        margin-bottom: 40px;
+    }
+
+    .product-image-section {
+        position: relative;
+    }
+
+    .product-image {
+        width: 100%;
+        height: 500px;
+        object-fit: cover;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+
+    .product-info-section h1 {
+        font-size: 2.5rem;
+        color: #2c3e50;
+        margin-bottom: 10px;
+        font-weight: 700;
+    }
+
+    .product-price {
+        font-size: 2rem;
+        color: #e74c3c;
+        font-weight: 600;
+        margin-bottom: 15px;
+    }
+
+    .original-price {
+        text-decoration: line-through;
+        color: #7f8c8d;
+        font-size: 1.2rem;
+        margin-left: 10px;
+    }
+
+    .discount-badge {
+        background: #27ae60;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-left: 10px;
+    }
+
+    .product-rating {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .stars {
+        color: #f39c12;
+        margin-right: 10px;
+    }
+
+    .rating-text {
+        color: #7f8c8d;
+        font-size: 0.9rem;
+    }
+
+    .product-description {
+        color: #34495e;
+        line-height: 1.6;
+        margin-bottom: 30px;
+        font-size: 1.1rem;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #3498db, #2980b9);
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        border-radius: 10px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .btn-primary-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+    }
+
+    .btn-secondary-custom {
+        background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        border-radius: 10px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .btn-secondary-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(149, 165, 166, 0.4);
+    }
+
+    .product-meta {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+    }
+
+    .meta-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .meta-item:last-child {
+        border-bottom: none;
+    }
+
+    .meta-label {
+        font-weight: 600;
+        color: #495057;
+    }
+
+    .meta-value {
+        color: #6c757d;
+    }
+
+    .related-products {
+        margin-top: 50px;
+    }
+
+    .related-products h2 {
+        text-align: center;
+        color: #2c3e50;
+        margin-bottom: 30px;
+        font-size: 2rem;
+        font-weight: 700;
+    }
+
+    .related-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+    }
+
+    .related-card {
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        transition: transform 0.3s ease;
+    }
+
+    .related-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .related-card img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+
+    .related-card-content {
+        padding: 15px;
+    }
+
+    .related-card h3 {
+        font-size: 1.1rem;
+        color: #2c3e50;
+        margin-bottom: 5px;
+    }
+
+    .related-card .price {
+        color: #e74c3c;
+        font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+        .product-detail-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .product-info-section h1 {
+            font-size: 2rem;
+        }
+    }
+</style>
+
+<div class="product-detail-container">
+    <div class="product-detail-grid">
+        <!-- Product Image -->
+        <div class="product-image-section">
+            {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
+            {% else %}
+                <img src="/static/images/no-image.png" alt="No Image Available" class="product-image">
+            {% endif %}
+        </div>
+
+        <!-- Product Information -->
+        <div class="product-info-section">
+            <h1>{{ product.name }}</h1>
+
+            <div class="product-price">
+                ₹{{ product.discounted_price|floatformat:2 }}
+                {% if product.discount > 0 %}
+                    <span class="original-price">₹{{ product.price }}</span>
+                    <span class="discount-badge">{{ product.discount }}% OFF</span>
+                {% endif %}
+            </div>
+
+            {% if product.rating %}
+            <div class="product-rating">
+                <div class="stars">
+                    {% for i in "12345"|make_list %}
+                        {% if forloop.counter <= product.rating %}
+                            ★
+                        {% else %}
+                            ☆
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <span class="rating-text">{{ product.rating }} out of 5 stars</span>
+            </div>
+            {% endif %}
+
+            {% if product.description %}
+            <div class="product-description">
+                {{ product.description }}
+            </div>
+            {% endif %}
+
+            <div class="action-buttons">
+                <a href="{% url 'buy_now' product.id %}" class="btn-primary-custom">
+                    <i class="fas fa-shopping-cart"></i> Buy Now
+                </a>
+                <a href="{% url 'add_to_cart' product.id %}" class="btn-secondary-custom">
+                    <i class="fas fa-cart-plus"></i> Add to Cart
+                </a>
+            </div>
+
+            <div class="product-meta">
+                <div class="meta-item">
+                    <span class="meta-label">Product ID:</span>
+                    <span class="meta-value">{{ product.id }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Category:</span>
+                    <span class="meta-value">{{ product.category.name }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Added:</span>
+                    <span class="meta-value">{{ product.created_at|date:"M d, Y" }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Products -->
+    <div class="related-products">
+        <h2>Related Products</h2>
+        <div class="related-grid">
+            {% for related_product in product.category.products.all|slice:":4" %}
+                {% if related_product.id != product.id %}
+                <div class="related-card">
+                    {% if related_product.image %}
+                        <img src="{{ related_product.image.url }}" alt="{{ related_product.name }}">
+                    {% else %}
+                        <img src="/static/images/no-image.png" alt="No Image Available">
+                    {% endif %}
+                    <div class="related-card-content">
+                        <h3>{{ related_product.name }}</h3>
+                        <p class="price">₹{{ related_product.discounted_price|floatformat:2 }}</p>
+                        <a href="{% url 'product_detail' related_product.id %}" class="btn-secondary-custom" style="padding: 8px 16px; font-size: 0.9rem;">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.contrib.auth.password_validation import validate_password
 from django.db import transaction
+from decimal import Decimal
 
 from .models import Product, Profile, Category, WishlistItem, Cart, CartItem, Order, OrderItem, Payment
 from django.conf import settings
@@ -34,6 +35,13 @@ def home(request):
 # --------------------------
 def all_products(request):
     return redirect('home')
+
+# --------------------------
+# Categories page
+# --------------------------
+def categories(request):
+    categories = Category.objects.all()
+    return render(request, 'shop/categories.html', {'categories': categories})
 
 # --------------------------
 # Products filtered by category
@@ -106,7 +114,8 @@ def login_view(request):
         if user:
             login(request, user)
             messages.success(request, f"Welcome back, {user.username}!")
-            return redirect('home')
+            next_url = request.GET.get('next') or 'home'
+            return redirect(next_url)
         else:
             messages.error(request, "⚠️ Invalid username or password!")
             return render(request, 'shop/login.html', {'username': username})
@@ -171,9 +180,9 @@ def dashboard(request):
 # --------------------------
 # Product Detail view
 # --------------------------
-def product_detail(request, slug):
-    # Deprecated: product page removed; redirect to home
-    return redirect('home')
+def product_detail(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    return render(request, 'shop/product_detail.html', {'product': product})
 
 # --------------------------
 # Standalone Buy form (no product context)
@@ -226,6 +235,18 @@ def offers_page(request):
     products = Product.objects.order_by('-discount').all()[:24]
     return render(request, 'shop/offers.html', { 'categories': categories, 'products': products })
 
+# --------------------------
+# About page
+# --------------------------
+def about(request):
+    return render(request, 'shop/about.html')
+
+# --------------------------
+# Contact page
+# --------------------------
+def contact(request):
+    return render(request, 'shop/contact.html')
+
 def order_success(request, order_id):
     return render(request, 'shop/order_success.html', { 'order_id': order_id })
 
@@ -238,83 +259,78 @@ def my_orders(request):
 # --------------------------
 # Buy Now view
 # --------------------------
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from .models import Product, Cart, CartItem, Order, OrderItem
-
 @login_required(login_url='login')
 def buy_now(request, product_id):
     product = get_object_or_404(Product, id=product_id)
+    profile, _ = Profile.objects.get_or_create(user=request.user)
 
-    # Calculate billing values for template
-    from decimal import Decimal
-    quantity = 1  # default quantity
-    
-    # Get quantity from POST if available
+    # --- Handle POST request (when user submits the form) ---
     if request.method == 'POST':
         quantity = int(request.POST.get('quantity', 1))
-    
-    base_price = product.discounted_price()
-    subtotal = base_price * quantity
-    
-    # GST breakdown (18% total = 9% CGST + 9% SGST for intra-state)
-    cgst = round(float(subtotal) * 0.09, 2)
-    sgst = round(float(subtotal) * 0.09, 2)
-    total_gst = cgst + sgst
-    
-    # Extra charges
-    delivery_charge = Decimal('50.00')
-    packaging_charge = Decimal('25.00')
-    handling_charge = Decimal('15.00')
-    
-    # Calculate grand total
-    grand_total = round(float(subtotal) + total_gst + float(delivery_charge) + float(packaging_charge) + float(handling_charge), 2)
+        if quantity < 1:
+            quantity = 1
 
-    if request.method == 'POST':
-        name = (request.POST.get('name') or '').strip()
-        phone = (request.POST.get('phone') or '').strip()
-        address = (request.POST.get('address') or '').strip()
-        email = (request.POST.get('email') or '').strip()
-        payment_method = (request.POST.get('payment_method') or 'cod')
+        # If the user is placing the final order
+        if 'payment_method' in request.POST:
+            name = request.POST.get('name')
+            email = request.POST.get('email')
+            phone = request.POST.get('phone')
+            address = request.POST.get('address')
+            payment_method = request.POST.get('payment_method')
 
-        # Validate required fields
-        if not name or not phone or not address:
-            messages.error(request, "Please fill in all required fields.")
-            return redirect('buy_now', product_id=product_id)
+            # Update profile for future use
+            profile.address = address
+            profile.mobile_number = phone
+            profile.save()
 
-        # Create or update cart entry
-        cart_obj, _ = Cart.objects.get_or_create(user=request.user)
-        item, created = CartItem.objects.get_or_create(cart=cart_obj, product=product)
-        if not created:
-            item.quantity = quantity
-            item.save()
-        else:
-            item.quantity = quantity
-            item.save()
-        request.session['cart'] = {str(i.product.id): i.quantity for i in cart_obj.items.all()}
+            # Recalculate total for order creation
+            subtotal = product.discounted_price() * quantity
+            cgst = round(subtotal * Decimal('0.09'), 2)
+            sgst = round(subtotal * Decimal('0.09'), 2)
+            delivery_charge = Decimal('50.00')
+            packaging_charge = Decimal('20.00')
+            handling_charge = Decimal('15.00')
+            grand_total = subtotal + cgst + sgst + delivery_charge + packaging_charge + handling_charge
 
-        # Create Order and OrderItem
-        customer = getattr(request.user, 'profile', None)
-        if customer:
-            order = Order.objects.create(customer=customer)
+            order = Order.objects.create(
+                customer=profile,
+                user=request.user,
+                shipping_address=address,
+                total_amount=grand_total,
+                payment_method=payment_method,
+                payment_status='Pending'
+            )
             OrderItem.objects.create(order=order, product=product, quantity=quantity)
 
-            if payment_method == 'upi' or payment_method == 'card':
+            messages.success(request, "Your order has been placed successfully!")
+            if payment_method == 'upi':
                 return redirect('pay_now', order_id=order.id)
+            else:
+                # Assuming you have an order success page
+                return redirect('home') # Or redirect to an order success page
 
-            # Non-online: mark as pending and show success placeholder
-            messages.success(request, f"Order placed successfully! Order ID: #{order.id}")
-            return redirect('order_success', order_id=order.id)
+    # --- Handle GET request (when page first loads) or quantity change ---
+    # This block now runs for the initial page load and when quantity is updated.
+    quantity = int(request.GET.get('quantity', 1))
+    if quantity < 1:
+        quantity = 1
 
-        messages.success(request, "Order info received.")
-        return redirect('home')
+    # --- Perform Billing Calculations ---
+    subtotal = product.discounted_price() * quantity
+    cgst = round(subtotal * Decimal('0.09'), 2)
+    sgst = round(subtotal * Decimal('0.09'), 2)
+    delivery_charge = Decimal('50.00')
+    packaging_charge = Decimal('20.00')
+    handling_charge = Decimal('15.00')
+    grand_total = subtotal + cgst + sgst + delivery_charge + packaging_charge + handling_charge
 
-    # Pass comprehensive billing values to template
+    # --- Prepare Context for Template ---
+    total_gst = cgst + sgst
+    base_price = product.discounted_price()
     context = {
         'product': product,
+        'profile': profile,
         'quantity': quantity,
-        'base_price': base_price,
         'subtotal': subtotal,
         'cgst': cgst,
         'sgst': sgst,
@@ -323,10 +339,10 @@ def buy_now(request, product_id):
         'packaging_charge': packaging_charge,
         'handling_charge': handling_charge,
         'grand_total': grand_total,
+        'base_price': base_price,
     }
 
     return render(request, 'shop/buy_now.html', context)
-
 
 # --------------------------
 # Payments (Razorpay)
@@ -347,7 +363,7 @@ def payment_create(request, order_id):
             'message': 'Payment gateway not configured. Please contact administrator.'
         }, status=400)
 
-    amount_rupees = max(int(order.total_price()), 1)
+    amount_rupees = max(int(order.total_amount), 1)
     amount_paise = amount_rupees * 100
     
     try:
@@ -457,19 +473,44 @@ def payment_verify(request):
     
     return JsonResponse({'ok': True, 'message': 'Payment verified successfully'})
 
-
 @login_required(login_url='login')
 def pay_now(request, order_id):
-    order = get_object_or_404(Order, id=order_id)
-    # If already paid, go to success
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+
+    # If already paid, redirect to success
     if order.payment_status == 'Paid':
         return redirect('order_success', order_id=order.id)
-    # If order has no items, try to hydrate from cart for correct amount
-    if order.items.count() == 0 and request.user.is_authenticated:
+
+    # If order has no items, populate from cart
+    if order.items.count() == 0:
         cart_obj, _ = Cart.objects.get_or_create(user=request.user)
         for ci in cart_obj.items.select_related('product').all():
-            OrderItem.objects.get_or_create(order=order, product=ci.product, defaults={'quantity': ci.quantity})
-    return render(request, 'shop/pay_now.html', { 'order': order })
+            OrderItem.objects.get_or_create(
+                order=order,
+                product=ci.product,
+                defaults={'quantity': ci.quantity}
+            )
+
+    # Calculate billing
+    subtotal = sum(item.product.price * item.quantity for item in order.items.all())
+    tax = round(subtotal * 0.18, 2)  # GST 18%
+    delivery = 50 if subtotal > 0 else 0  # Optional: free delivery if subtotal > certain amount
+    total = round(subtotal + tax + delivery, 2)
+
+    # Update order total
+    order.total_amount = total
+    order.save()
+
+    context = {
+        'order': order,
+        'order_items': order.items.all(),
+        'subtotal': subtotal,
+        'tax': tax,
+        'delivery': delivery,
+        'total': total
+    }
+
+    return render(request, 'pay_now.html', context)
 
 # --------------------------
 # Add to Cart
@@ -538,7 +579,6 @@ def wishlist_view(request):
     products = [wi.product for wi in items]
     return render(request, 'shop/wishlist.html', { 'products': products })
 
-
 @login_required(login_url='login')
 def toggle_wishlist(request, product_id):
     product = get_object_or_404(Product, id=product_id)
@@ -553,12 +593,10 @@ def toggle_wishlist(request, product_id):
     messages.success(request, f"Wishlist {status} for {product.name}")
     return redirect('all_products')
 
-
 # Aliases with requested names
 @login_required(login_url='login')
 def wishlist_toggle(request, product_id):
     return toggle_wishlist(request, product_id)
-
 
 @login_required(login_url='login')
 def wishlist_page(request):

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Ideal Furniture{% endblock %}</title>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <style>
+        * {
+            margin: 0; padding: 0; box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body { background: #f9f9f9; color: #333; }
+
+        /* --- Top Bar --- */
+        .top-bar {
+            background: #fffaf3; border-bottom: 1px solid #eee;
+            padding: 8px 50px; font-size: 13px;
+        }
+        .top-bar-content {
+            display: flex; justify-content: flex-end; align-items: center; gap: 25px;
+        }
+        .top-bar a { color: #555; text-decoration: none; transition: color 0.3s; }
+        .top-bar a:hover { color: #e65100; }
+
+        /* --- Header --- */
+        .main-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 50px; background: #fff; box-shadow: 0px 2px 10px rgba(0,0,0,0.05);
+        }
+        .logo a { text-decoration: none; color: #4a3c2a; }
+        .logo h1 { font-size: 2.3rem; font-weight: 700; }
+        .logo p { font-size: 0.9rem; color: #777; }
+
+        .search-container {
+            flex-grow: 1; display: flex; justify-content: center; padding: 0 40px;
+        }
+        .search-container input {
+            width: 100%; max-width: 500px; padding: 10px 20px;
+            border: 1px solid #ccc; border-radius: 25px;
+            outline-color: #ff6f00;
+        }
+        .search-container button {
+            background: none; border: none; font-size: 1.2rem;
+            color: #777; margin-left: -35px; cursor: pointer;
+        }
+
+        .header-icons {
+            display: flex; gap: 20px; position: relative;
+        }
+        .header-icons a {
+            text-decoration: none; color: #555;
+            font-size: 14px; display: flex; flex-direction: column;
+            align-items: center; transition: color 0.3s;
+        }
+        .header-icons i { font-size: 1.4rem; margin-bottom: 2px; }
+        .header-icons a:hover { color: #ff6f00; }
+
+        .cart-count {
+            position: absolute;
+            top: -6px;
+            right: -8px;
+            background: red;
+            color: #fff;
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 50%;
+        }
+
+        /* --- Navigation --- */
+        .main-nav {
+            background: #fff; padding: 10px 20px;
+            display: flex; justify-content: center; gap: 25px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            position: sticky; top: 0; z-index: 100;
+        }
+        .main-nav a {
+            color: #4a3c2a; text-decoration: none;
+            font-weight: 500; padding: 8px 14px;
+            border-radius: 6px; transition: 0.3s;
+            cursor: pointer;              /* avoid I-beam cursor */
+            user-select: none;            /* disable text selection */
+            -webkit-user-select: none;
+            -ms-user-select: none;
+        }
+        .main-nav a:hover, .main-nav a.active {
+            background: #ff6f00; color: #fff;
+        }
+
+        /* --- Footer --- */
+        footer {
+            background: #4a3c2a; color: #fff;
+            text-align: center; padding: 25px 20px;
+            font-size: 14px;
+        }
+        footer a {
+            color: #ffb74d; text-decoration: none; margin: 0 8px;
+        }
+        footer a:hover { text-decoration: underline; }
+
+        /* --- Responsive --- */
+        @media(max-width: 768px) {
+            .main-header { flex-direction: column; gap: 15px; text-align: center; }
+            .search-container { padding: 0; width: 100%; }
+            .header-icons { justify-content: center; flex-wrap: wrap; }
+            .main-nav { flex-wrap: wrap; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="top-bar-content">
+            <a href="tel:+917620062635"><i class="fas fa-phone-alt"></i> +91-7620062635</a>
+            <a href="{% url 'support' %}"><i class="fas fa-headset"></i> Support</a>
+            <a href="{% url 'track_order' %}"><i class="fas fa-truck"></i> Track Order</a>
+            <a href="{% url 'returns' %}"><i class="fas fa-rotate-left"></i> Returns</a>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="main-header">
+        <div class="logo">
+            <a href="{% url 'home' %}">
+                <h1>Ideal Furniture</h1>
+                <p>Furniture... bonded with love ❤️</p>
+            </a>
+        </div>
+        <div class="search-container">
+            <input type="text" placeholder="Search Products, Color & More...">
+            <button type="submit"><i class="fas fa-search"></i></button>
+        </div>
+        <div class="header-icons">
+            <a href="{% url 'offers' %}"><i class="fas fa-tags"></i><span>Offers</span></a>
+            <a href="{% url 'profile' %}"><i class="fas fa-user"></i><span>Profile</span></a>
+            <a href="{% url 'wishlist' %}"><i class="fas fa-heart" style="color:#6c757d"></i><span>Wishlist</span></a>
+            <a href="{% url 'cart' %}" class="cart-link"><i class="fas fa-shopping-cart"></i><span>Cart</span><span class="cart-count" id="cart-count">{{ cart_count|default:0 }}</span></a>
+            {% if not user.is_authenticated %}
+            <a href="{% url 'login' %}"><i class="fas fa-sign-in-alt"></i><span>Login</span></a>
+            {% endif %}
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="main-nav">
+        <a href="{% url 'home' %}">Home</a>
+        <a href="#products">Products</a>
+        <a href="{% url 'categories' %}">Categories</a>
+        <a href="{% url 'about' %}">About</a>
+        <a href="{% url 'contact' %}">Contact</a>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        &copy; {{ year }} Ideal Furniture |
+        <a href="#">Privacy Policy</a> |
+        <a href="#">Terms of Service</a> <br>
+        Follow Us:
+        <a href="#"><i class="fab fa-facebook"></i></a>
+        <a href="#"><i class="fab fa-instagram"></i></a>
+        <a href="#"><i class="fab fa-twitter"></i></a>
+    </footer>
+
+</body>
+</html>

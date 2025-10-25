@@ -100,6 +100,10 @@ class Order(models.Model):
     customer = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='orders')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
     payment_status = models.CharField(max_length=20, default='Pending')
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    shipping_address = models.TextField(blank=True, null=True)
+    payment_method = models.CharField(max_length=20, default='cod')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def total_price(self):

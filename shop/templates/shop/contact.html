@@ -1,0 +1,103 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}Contact Us - Ideal Furniture{% endblock %}
+
+{% block content %}
+<div style="max-width: 1200px; margin: 0 auto; padding: 40px 20px;">
+    <h1 style="font-size: 3rem; color: #4a3c2a; text-align: center; margin-bottom: 20px;">Contact Us</h1>
+    <p style="font-size: 1.2rem; color: #666; text-align: center; line-height: 1.6; margin-bottom: 40px;">
+        We'd love to hear from you! Whether you have questions about our products, need assistance with an order,
+        or just want to say hello, feel free to reach out to us using the information below or by filling out the form.
+    </p>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start;">
+        <!-- Contact Information -->
+        <div>
+            <h2 style="font-size: 2rem; color: #4a3c2a; margin-bottom: 30px;">Get In Touch</h2>
+
+            <div style="margin-bottom: 20px;">
+                <i class="fas fa-map-marker-alt" style="font-size: 1.5rem; color: #ff6f00; margin-right: 15px;"></i>
+                <div>
+                    <strong>Address:</strong><br>
+                    123 Furniture Street,<br>
+                    Design District,<br>
+                    City, State 12345
+                </div>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <i class="fas fa-phone-alt" style="font-size: 1.5rem; color: #ff6f00; margin-right: 15px;"></i>
+                <div>
+                    <strong>Phone:</strong><br>
+                    +91-7620062635
+                </div>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <i class="fas fa-envelope" style="font-size: 1.5rem; color: #ff6f00; margin-right: 15px;"></i>
+                <div>
+                    <strong>Email:</strong><br>
+                    info@idealfurniture.com
+                </div>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <i class="fas fa-clock" style="font-size: 1.5rem; color: #ff6f00; margin-right: 15px;"></i>
+                <div>
+                    <strong>Business Hours:</strong><br>
+                    Monday - Saturday: 9:00 AM - 7:00 PM<br>
+                    Sunday: 10:00 AM - 4:00 PM
+                </div>
+            </div>
+
+            <div style="margin-top: 30px;">
+                <h3 style="color: #4a3c2a; margin-bottom: 15px;">Follow Us</h3>
+                <a href="#" style="margin-right: 15px; color: #ff6f00; font-size: 1.5rem;"><i class="fab fa-facebook"></i></a>
+                <a href="#" style="margin-right: 15px; color: #ff6f00; font-size: 1.5rem;"><i class="fab fa-instagram"></i></a>
+                <a href="#" style="margin-right: 15px; color: #ff6f00; font-size: 1.5rem;"><i class="fab fa-twitter"></i></a>
+                <a href="#" style="color: #ff6f00; font-size: 1.5rem;"><i class="fab fa-pinterest"></i></a>
+            </div>
+        </div>
+
+        <!-- Contact Form -->
+        <div style="background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+            <h3 style="font-size: 1.8rem; color: #4a3c2a; margin-bottom: 20px;">Send Us a Message</h3>
+
+            <form action="#" method="post" style="display: flex; flex-direction: column;">
+                {% csrf_token %}
+                <div style="margin-bottom: 15px;">
+                    <label for="name" style="display: block; margin-bottom: 5px; font-weight: bold;">Name</label>
+                    <input type="text" id="name" name="name" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 1rem;">
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <label for="email" style="display: block; margin-bottom: 5px; font-weight: bold;">Email</label>
+                    <input type="email" id="email" name="email" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 1rem;">
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <label for="subject" style="display: block; margin-bottom: 5px; font-weight: bold;">Subject</label>
+                    <input type="text" id="subject" name="subject" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 1rem;">
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label for="message" style="display: block; margin-bottom: 5px; font-weight: bold;">Message</label>
+                    <textarea id="message" name="message" rows="6" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 1rem; resize: vertical;"></textarea>
+                </div>
+
+                <button type="submit" style="background: #ff6f00; color: #fff; border: none; padding: 12px; border-radius: 5px; font-size: 1.1rem; cursor: pointer; transition: background 0.3s;">
+                    Send Message
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Map Placeholder -->
+    <div style="margin-top: 50px; text-align: center;">
+        <h2 style="font-size: 2rem; color: #4a3c2a; margin-bottom: 20px;">Find Us</h2>
+        <div style="background: #f0f0f0; height: 300px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #666;">
+            <p>Interactive Map Placeholder<br>(Google Maps integration can be added here)</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

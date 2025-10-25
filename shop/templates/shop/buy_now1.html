@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Your Order - Ideal Furniture</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        * {
+            margin: 0; padding: 0; box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background: #f4f4f9;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .invoice-container {
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 800px;
+            overflow: hidden;
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .product-details {
+            padding: 40px;
+            flex: 1 1 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .product-details img {
+            max-width: 100%;
+            height: auto;
+            max-height: 250px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .product-details h2 {
+            font-size: 1.8rem;
+            color: #4a3c2a;
+            margin-bottom: 10px;
+        }
+        .product-details .price {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .product-details .description {
+            font-size: 0.95rem;
+            color: #666;
+            line-height: 1.6;
+        }
+        .order-summary {
+            background: #fdfaf6;
+            padding: 40px;
+            flex: 1 1 300px;
+        }
+        .order-summary h3 {
+            font-size: 1.5rem;
+            color: #4a3c2a;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 1rem;
+        }
+        .summary-item.total {
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px solid #eee;
+        }
+        .place-order-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(to right, #ff6f00, #ffb74d);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            text-align: center;
+            text-decoration: none;
+            margin-top: 20px;
+        }
+        .place-order-btn:hover {
+            opacity: 0.9;
+            transform: scale(1.02);
+        }
+        @media(max-width: 768px) {
+            .invoice-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="invoice-container">
+        <div class="product-details">
+            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+            <h2>{{ product.name }}</h2>
+            <p class="price">₹{{ product.price }}</p>
+            <p class="description">{{ product.description|default:"No description available." }}</p>
+        </div>
+        <div class="order-summary">
+            <h3>Order Summary</h3>
+            <div class="summary-item">
+                <span>Subtotal</span>
+                <span>₹{{ product.price }}</span>
+            </div>
+            <div class="summary-item">
+                <span>Shipping</span>
+                <span>FREE</span>
+            </div>
+            <div class="summary-item total">
+                <span>Total</span>
+                <span>₹{{ product.price }}</span>
+            </div>
+            <a href="#" class="place-order-btn">Place Order</a>
+        </div>
+    </div>
+</body>
+</html>

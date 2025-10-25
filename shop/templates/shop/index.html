@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Furniture Shop</title>
+    <title>Ideal Furniture</title>
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -173,7 +173,7 @@
     <header class="main-header">
         <div class="logo">
             <a href="{% url 'home' %}">
-                <h1>My Furniture</h1>
+                <h1>Ideal Furniture</h1>
                 <p>Furniture... bonded with love ❤️</p>
             </a>
         </div>
@@ -232,7 +232,7 @@
                                 <p class="rating">⭐ {{ product.rating }}</p>
                             {% endif %}
                             <div class="btn-container" style="display:flex;align-items:center;gap:10px;justify-content:center;">
-                                <a class="btn buy-btn" href="{% url 'buy' %}">Buy Now</a>
+                                <a class="btn buy-btn" href="{% url 'buy_now' product.id %}">Buy Now</a>
                                 <a class="btn cart-btn add-to-cart" href="{% url 'add_to_cart' product.id %}">Add to Cart</a>
                                 <button class="btn wishlist-toggle" data-product-id="{{ product.id }}" title="Add to Wishlist" style="background:none;border:none;cursor:pointer;">
                                     <i class="fas fa-heart {% if product.id in wishlist_ids %}text-danger{% else %}text-secondary{% endif %}"
@@ -251,7 +251,7 @@
 
     <!-- Footer -->
     <footer>
-        &copy; {{ year }} My Furniture Shop | 
+        &copy; {{ year }} Ideal Furniture| 
         <a href="#">Privacy Policy</a> | 
         <a href="#">Terms of Service</a> <br>
         Follow Us:
@@ -280,11 +280,17 @@
             fetch(`{% url 'toggle_wishlist' 0 %}`.replace('0', pid), {
                 method: 'POST',
                 headers: {
+                    'Content-Type': 'application/json',
                     'X-CSRFToken': (document.cookie.match(/csrftoken=([^;]+)/)||[])[1] || '',
                     'X-Requested-With': 'XMLHttpRequest'
                 }
             }).then(async (r)=>{
-                if (r.redirected) { return; }
+                if (r.redirected) {
+                    // If user is not authenticated, Django redirects to login.
+                    // Redirect the user to the login page.
+                    window.location.href = r.url;
+                    return;
+                }
                 let data = {};
                 try { data = await r.json(); } catch (_) {}
                 const icon = btn.querySelector('i');
@@ -298,6 +304,45 @@
                     icon.classList.add('text-secondary');
                     icon.style.color = '#6c757d';
                 }
+            });
+        });
+
+        // Add to Cart (AJAX)
+        document.addEventListener('click', function(e) {
+            const btn = e.target.closest('.add-to-cart');
+            if (!btn) return;
+            e.preventDefault(); // Prevent default link navigation
+
+            const url = btn.getAttribute('href');
+            const originalText = btn.innerHTML;
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': (document.cookie.match(/csrftoken=([^;]+)/) || [])[1] || '',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            }).then(async (r) => {
+                if (r.redirected) {
+                    window.location.href = r.url;
+                    return;
+                }
+                if (r.ok) {
+                    const data = await r.json();
+                    // Update cart count in header
+                    const cartCountEl = document.getElementById('cart-count');
+                    if (cartCountEl) {
+                        cartCountEl.textContent = data.cart_count;
+                    }
+                    // Provide visual feedback
+                    btn.innerHTML = 'Added!';
+                    setTimeout(() => { btn.innerHTML = originalText; }, 1500);
+                } else {
+                    alert('Something went wrong. Please try again.');
+                }
+            }).catch(() => {
+                alert('Could not add to cart. Please check your connection.');
             });
         });
     </script>

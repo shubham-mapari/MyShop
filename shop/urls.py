@@ -15,13 +15,17 @@ urlpatterns = [
     # Products
     # -------------------
     path("products/", views.all_products, name="all_products"),  # all products page
+    path("categories/", views.categories, name="categories"),  # categories page
     path("products/category/<slug:category_slug>/", views.products_by_category, name="products_by_category"),  # filter by category
+    path("products/<int:product_id>/", views.product_detail, name="product_detail"),  # product detail page
     path("buy/", views.buy_form, name="buy"),  # standalone order form
     path("billing/", views.billing_page, name="billing"),  # standalone billing page
     path("support/", views.support_page, name="support"),
     path("returns/", views.returns_page, name="returns"),
     path("track-order/", views.track_order_page, name="track_order"),
     path("offers/", views.offers_page, name="offers"),
+    path("about/", views.about, name="about"),
+    path("contact/", views.contact, name="contact"),
     path("order/success/<int:order_id>/", views.order_success, name="order_success"),
     path("order/pay/<int:order_id>/", views.pay_now, name="pay_now"),
     path("my-orders/", views.my_orders, name="my_orders"),
