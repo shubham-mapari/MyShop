@@ -14,7 +14,8 @@ SECRET_KEY = config("SECRET_KEY", default="insecure-key")
 DEBUG = config("DEBUG", default=True, cast=bool)
 ALLOWED_HOSTS = [
     'localhost',
-    '127.0.0.1'
+    '127.0.0.1',
+    'myfurnitureshop.onrender.com'
 ]
 # Optional: CSRF trusted origins (comma-separated full URLs). Needed when using ngrok/public tunnels.
 _csrf_origins = config("CSRF_TRUSTED_ORIGINS", default="").split(",")
