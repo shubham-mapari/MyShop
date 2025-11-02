@@ -415,6 +415,250 @@
         color: var(--success-green);
     }
 
+    /* Order Confirmation Modal Styles */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 9999;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .modal-overlay.active {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+        from {
+            transform: translateY(50px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .confirmation-modal {
+        background: white;
+        border-radius: 20px;
+        max-width: 500px;
+        width: 90%;
+        padding: 0;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        animation: slideUp 0.4s ease;
+        overflow: hidden;
+    }
+
+    .modal-header {
+        background: linear-gradient(135deg, var(--primary-wood), var(--dark-wood));
+        color: white;
+        padding: 25px 30px;
+        text-align: center;
+        position: relative;
+    }
+
+    .modal-close {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .modal-close:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: rotate(90deg);
+    }
+
+    .modal-icon {
+        width: 80px;
+        height: 80px;
+        background: white;
+        border-radius: 50%;
+        margin: 0 auto 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-icon i {
+        font-size: 2.5rem;
+        color: var(--primary-wood);
+    }
+
+    .modal-header h2 {
+        margin: 0;
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+
+    .modal-header p {
+        margin: 8px 0 0;
+        opacity: 0.95;
+        font-size: 1rem;
+    }
+
+    .modal-body {
+        padding: 30px;
+    }
+
+    .order-summary-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--light-beige);
+    }
+
+    .order-summary-item:last-child {
+        border-bottom: none;
+    }
+
+    .summary-label {
+        color: #666;
+        font-weight: 500;
+    }
+
+    .summary-value {
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+
+    .modal-total {
+        background: var(--cream-bg);
+        padding: 15px;
+        border-radius: 10px;
+        margin: 20px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-total .summary-label {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--text-dark);
+    }
+
+    .modal-total .summary-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-wood);
+    }
+
+    .delivery-info {
+        background: #e8f5e9;
+        padding: 15px;
+        border-radius: 10px;
+        margin: 15px 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .delivery-info i {
+        font-size: 1.5rem;
+        color: var(--success-green);
+    }
+
+    .delivery-info-text {
+        flex: 1;
+    }
+
+    .delivery-info-text strong {
+        display: block;
+        color: var(--text-dark);
+        margin-bottom: 4px;
+    }
+
+    .delivery-info-text span {
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 15px;
+        margin-top: 25px;
+    }
+
+    .btn-modal {
+        flex: 1;
+        padding: 14px;
+        border: none;
+        border-radius: 10px;
+        font-size: 1.05rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-cancel {
+        background: #f5f5f5;
+        color: #666;
+    }
+
+    .btn-cancel:hover {
+        background: #e0e0e0;
+    }
+
+    .btn-confirm {
+        background: linear-gradient(135deg, var(--success-green), #218838);
+        color: white;
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    }
+
+    .btn-confirm:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(40, 167, 69, 0.4);
+    }
+
+    .payment-method-display {
+        background: var(--light-beige);
+        padding: 12px 15px;
+        border-radius: 8px;
+        margin: 15px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .payment-method-display i {
+        font-size: 1.3rem;
+        color: var(--primary-wood);
+    }
+
+    .payment-method-display span {
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+
     @media (max-width: 768px) {
         .product-showcase {
             flex-direction: column;
@@ -431,6 +675,22 @@
 
         .payment-methods {
             grid-template-columns: 1fr;
+        }
+
+        .confirmation-modal {
+            max-width: 95%;
+        }
+
+        .modal-header h2 {
+            font-size: 1.5rem;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-actions {
+            flex-direction: column;
         }
     }
 
@@ -731,7 +991,7 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="btn-confirm-order">
+                    <button type="button" class="btn-confirm-order" onclick="showConfirmationModal()">
                         <i class="fas fa-check-circle"></i> Confirm Order
                     </button>
 
@@ -743,6 +1003,73 @@
             </div>
         </div>
     </form>
+</div>
+
+<!-- Order Confirmation Modal -->
+<div class="modal-overlay" id="confirmationModal">
+    <div class="confirmation-modal">
+        <div class="modal-header">
+            <button type="button" class="modal-close" onclick="closeConfirmationModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-icon">
+                <i class="fas fa-shopping-bag"></i>
+            </div>
+            <h2>Confirm Your Order</h2>
+            <p>Please review your order details before confirming</p>
+        </div>
+        <div class="modal-body">
+            <div class="order-summary-item">
+                <span class="summary-label">Product</span>
+                <span class="summary-value" id="modal_product_name">{{ product.name }}</span>
+            </div>
+            <div class="order-summary-item">
+                <span class="summary-label">Quantity</span>
+                <span class="summary-value" id="modal_quantity">{{ quantity }}</span>
+            </div>
+            <div class="order-summary-item">
+                <span class="summary-label">Subtotal</span>
+                <span class="summary-value" id="modal_subtotal">₹{{ subtotal|floatformat:2 }}</span>
+            </div>
+            <div class="order-summary-item">
+                <span class="summary-label">GST (18%)</span>
+                <span class="summary-value" id="modal_gst">₹{{ total_gst|floatformat:2 }}</span>
+            </div>
+            <div class="order-summary-item">
+                <span class="summary-label">Delivery & Other Charges</span>
+                <span class="summary-value">₹{{ delivery_charge|add:packaging_charge|add:handling_charge|floatformat:2 }}</span>
+            </div>
+
+            <div class="modal-total">
+                <span class="summary-label">Total Amount</span>
+                <span class="summary-value" id="modal_grand_total">₹{{ grand_total|floatformat:2 }}</span>
+            </div>
+
+            <div class="payment-method-display">
+                <i class="fas fa-money-bill-wave" id="modal_payment_icon"></i>
+                <span id="modal_payment_method">Cash on Delivery</span>
+            </div>
+
+            <div class="delivery-info">
+                <i class="fas fa-truck"></i>
+                <div class="delivery-info-text">
+                    <strong>Expected Delivery</strong>
+                    <span>Your order will be delivered within 5-7 business days</span>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-modal btn-cancel" onclick="closeConfirmationModal()">
+                    <i class="fas fa-arrow-left"></i>
+                    Go Back
+                </button>
+                <button type="button" class="btn-modal btn-confirm" onclick="confirmAndSubmit()">
+                    <i class="fas fa-check-circle"></i>
+                    Place Order
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 {% if product %}
@@ -799,7 +1126,87 @@
         document.getElementById('hidden_total').value = grandTotal.toFixed(2);
     }
 
-    // Form validation
+    // Show confirmation modal
+    function showConfirmationModal() {
+        // Validate form first
+        const name = document.querySelector('input[name="name"]').value;
+        const phone = document.querySelector('input[name="phone"]').value;
+        const address = document.querySelector('textarea[name="address"]').value;
+
+        if (!name.trim()) {
+            alert('Please enter your full name');
+            return false;
+        }
+
+        if (!/^[0-9]{10}$/.test(phone)) {
+            alert('Please enter a valid 10-digit phone number');
+            return false;
+        }
+
+        if (!address.trim() || address.trim().length < 10) {
+            alert('Please enter a complete shipping address');
+            return false;
+        }
+
+        // Update modal with current values
+        const quantity = parseInt(document.getElementById('quantity').value);
+        document.getElementById('modal_quantity').textContent = quantity;
+        document.getElementById('modal_subtotal').textContent = document.getElementById('display_subtotal').textContent;
+        document.getElementById('modal_gst').textContent = document.getElementById('display_total_gst').textContent;
+        document.getElementById('modal_grand_total').textContent = document.getElementById('display_grand_total').textContent;
+
+        // Update payment method display
+        const selectedPayment = document.querySelector('input[name="payment_method"]:checked');
+        const paymentIcon = document.getElementById('modal_payment_icon');
+        const paymentText = document.getElementById('modal_payment_method');
+
+        if (selectedPayment.value === 'cod') {
+            paymentIcon.className = 'fas fa-money-bill-wave';
+            paymentText.textContent = 'Cash on Delivery';
+        } else if (selectedPayment.value === 'card') {
+            paymentIcon.className = 'fas fa-credit-card';
+            paymentText.textContent = 'Credit/Debit Card';
+        } else if (selectedPayment.value === 'upi') {
+            paymentIcon.className = 'fas fa-mobile-alt';
+            paymentText.textContent = 'UPI Payment';
+        }
+
+        // Show modal
+        document.getElementById('confirmationModal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    // Close confirmation modal
+    function closeConfirmationModal() {
+        document.getElementById('confirmationModal').classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+
+    // Confirm and submit order
+    function confirmAndSubmit() {
+        const btn = document.querySelector('.btn-confirm');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        btn.disabled = true;
+
+        // Submit the form
+        document.getElementById('checkoutForm').submit();
+    }
+
+    // Close modal on overlay click
+    document.getElementById('confirmationModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeConfirmationModal();
+        }
+    });
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeConfirmationModal();
+        }
+    });
+
+    // Form validation (kept for direct submission if needed)
     document.getElementById('checkoutForm').addEventListener('submit', function(e) {
         const phone = document.querySelector('input[name="phone"]').value;
         const address = document.querySelector('textarea[name="address"]').value;
@@ -823,10 +1230,8 @@
             return false;
         }
 
-        // Show loading state
-        const btn = document.querySelector('.btn-confirm-order');
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing Order...';
-        btn.disabled = true;
+        // This will only trigger on direct form submission
+        // Modal submission uses confirmAndSubmit() function
     });
 
     // Initialize quantity input listener
