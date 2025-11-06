@@ -7,6 +7,7 @@ urlpatterns = [
     # Home + Auth
     # -------------------
     path("", views.home, name="home"),
+    path("search/", views.search_products, name="search_products"),
     path("signup/", views.signup, name="signup"),
     path("login/", views.login_view, name="login"),
     path("logout/", views.logout_view, name="logout"),
@@ -29,6 +30,8 @@ urlpatterns = [
     path("order/success/<int:order_id>/", views.order_success, name="order_success"),
     path("order/pay/<int:order_id>/", views.pay_now, name="pay_now"),
     path("my-orders/", views.my_orders, name="my_orders"),
+    path("order/cancel/<int:order_id>/", views.cancel_order, name="cancel_order"),
+    path("order/invoice/<int:order_id>/", views.download_invoice, name="download_invoice"),
     path("payment/create/<int:order_id>/", views.payment_create, name="payment_create"),
     path("payment/verify/", views.payment_verify, name="payment_verify"),
     path("products/buy/<int:product_id>/", views.buy_now, name="buy_now"),  # legacy: redirect to buy

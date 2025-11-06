@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ideal Furniture</title>
+    <title>Search Results - Ideal Furniture</title>
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -73,34 +73,36 @@
             border-radius: 50%;
         }
 
-        /* --- Navigation --- */
-        .main-nav {
-            background: #fff; padding: 10px 20px;
-            display: flex; justify-content: center; gap: 25px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            position: sticky; top: 0; z-index: 100;
+        /* --- Search Results --- */
+        .search-header {
+            padding: 30px 50px 20px;
+            background: #fff;
+            border-bottom: 2px solid #f0f0f0;
         }
-        .main-nav a {
-            color: #4a3c2a; text-decoration: none;
-            font-weight: 500; padding: 8px 14px;
-            border-radius: 6px; transition: 0.3s;
-            cursor: pointer;              /* avoid I-beam cursor */
-            user-select: none;            /* disable text selection */
-            -webkit-user-select: none;
-            -ms-user-select: none;
+        .search-header h1 {
+            font-size: 1.8rem;
+            color: #4a3c2a;
+            margin-bottom: 10px;
         }
-        .main-nav a:hover, .main-nav a.active {
-            background: #ff6f00; color: #fff;
+        .search-info {
+            color: #666;
+            font-size: 1rem;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 10px;
+            color: #ff6f00;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .back-link:hover {
+            text-decoration: underline;
         }
 
         /* --- Product Grid --- */
-        .category-title {
-            margin: 40px 0 20px; font-size: 1.8rem;
-            text-align: center; color: #4a3c2a; font-weight: 700;
-        }
         .products-grid {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px; padding: 0 50px 50px;
+            gap: 30px; padding: 40px 50px;
         }
         .product-card {
             background: #fff; border-radius: 15px;
@@ -139,6 +141,25 @@
             opacity: 0.9; transform: scale(1.05);
         }
 
+        .no-results {
+            text-align: center;
+            padding: 80px 20px;
+        }
+        .no-results i {
+            font-size: 4rem;
+            color: #ccc;
+            margin-bottom: 20px;
+        }
+        .no-results h2 {
+            font-size: 1.8rem;
+            color: #4a3c2a;
+            margin-bottom: 10px;
+        }
+        .no-results p {
+            color: #666;
+            font-size: 1rem;
+        }
+
         /* --- Footer --- */
         footer {
             background: #4a3c2a; color: #fff;
@@ -155,8 +176,8 @@
             .main-header { flex-direction: column; gap: 15px; text-align: center; }
             .search-container { padding: 0; width: 100%; }
             .header-icons { justify-content: center; flex-wrap: wrap; }
-            .main-nav { flex-wrap: wrap; justify-content: center; }
-            .products-grid { padding: 0 20px 30px; }
+            .products-grid { padding: 20px; }
+            .search-header { padding: 20px; }
         }
     </style>
 </head>
@@ -186,7 +207,7 @@
         </div>
         <div class="search-container">
             <form action="{% url 'search_products' %}" method="GET" style="display: flex; align-items: center; width: 100%;">
-                <input type="text" name="q" placeholder="Search Products, Color & More..." required>
+                <input type="text" name="q" placeholder="Search Products, Color & More..." value="{{ query }}" required>
                 <button type="submit"><i class="fas fa-search"></i></button>
             </form>
         </div>
@@ -201,66 +222,59 @@
         </div>
     </header>
 
-    <!-- Hero Banner with Parallax -->
-    <section class="reveal" style="position:relative; overflow:hidden; background: linear-gradient(120deg, #f3e9df, #efe6db);">
-        <div class="parallax" data-parallax="0.2" style="position:absolute; inset:0; background:url('https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=1600&auto=format&fit=crop') center/cover no-repeat; opacity:.25;"></div>
-        <div style="position:relative; padding:70px 20px; display:flex; align-items:center; justify-content:center; flex-direction:column; text-align:center;">
-            <h2 style="font-size:2.2rem; color:#4a3c2a; margin-bottom:10px;">Curated Furniture for Beautiful Homes</h2>
-            <p style="max-width:760px; color:#6b5c4b;">Discover premium sofas, tables, and decor in warm, elegant finishes. Crafted to last. Designed to love.</p>
-            <div style="margin-top:18px; display:flex; gap:10px;">
-                <a href="#product-container" class="btn btn-accent">Shop Collection</a>
-                <a href="#product-container" class="btn" style="background:#4a3c2a; color:#fff;">New Arrivals</a>
-            </div>
-        </div>
-    </section>
-
-
-    <!-- Navigation -->
-    <nav class="main-nav">
-        <a onclick="showCategory('all', this)" class="active">All Products</a>
-        {% for category in categories %}
-            <a onclick="showCategory('{{ category.slug }}', this)">{{ category.name }}</a>
-        {% endfor %}
-    </nav>
+    <!-- Search Results Header -->
+    <div class="search-header">
+        <h1><i class="fas fa-search"></i> Search Results</h1>
+        {% if query %}
+            <p class="search-info">
+                Showing results for "<strong>{{ query }}</strong>" 
+                {% if search_results %}
+                    ({{ search_results.count }} product{{ search_results.count|pluralize }} found)
+                {% endif %}
+            </p>
+        {% endif %}
+        <a href="{% url 'home' %}" class="back-link"><i class="fas fa-arrow-left"></i> Back to Home</a>
+    </div>
 
     <!-- Products -->
-    <main id="product-container">
-        {% for category in categories %}
-            <div class="category-section reveal" id="{{ category.slug }}">
-                <h2 class="category-title">{{ category.name }}</h2>
-                <div class="products-grid">
-                    {% for product in category.products.all %}
-                        <div class="product-card hover-lift quick-parent">
-                            <img src="{{ product.image.url }}" alt="{{ product.name }}">
-                            <h3>{{ product.name }}</h3>
-                            <p class="price">₹{{ product.price }}</p>
-                            {% if product.discount %}
-                                <p class="discount">{{ product.discount }}% OFF</p>
-                            {% endif %}
-                            {% if product.rating %}
-                                <p class="rating">⭐ {{ product.rating }}</p>
-                            {% endif %}
-                            <div class="btn-container" style="display:flex;align-items:center;gap:10px;justify-content:center;">
-                                <a class="btn buy-btn" href="{% url 'buy_now' product.id %}">Buy Now</a>
-                                <a class="btn cart-btn add-to-cart" href="{% url 'add_to_cart' product.id %}">Add to Cart</a>
-                                <button class="btn wishlist-toggle" data-product-id="{{ product.id }}" title="Add to Wishlist" style="background:none;border:none;cursor:pointer;">
-                                    <i class="fas fa-heart {% if product.id in wishlist_ids %}text-danger{% else %}text-secondary{% endif %}"
-                                       style="font-size:18px;color:{% if product.id in wishlist_ids %}#dc3545{% else %}#6c757d{% endif %};"></i>
-                                </button>
-                            </div>
-                            <div class="quick-overlay">
-                                <a href="{% url 'add_to_cart' product.id %}" class="btn btn-accent btn-sm add-to-cart">Add to Cart</a>
-                            </div>
+    <main>
+        {% if search_results %}
+            <div class="products-grid">
+                {% for product in search_results %}
+                    <div class="product-card">
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                        <h3>{{ product.name }}</h3>
+                        <p class="price">₹{{ product.price }}</p>
+                        {% if product.discount %}
+                            <p class="discount">{{ product.discount }}% OFF</p>
+                        {% endif %}
+                        {% if product.rating %}
+                            <p class="rating">⭐ {{ product.rating }}</p>
+                        {% endif %}
+                        <div class="btn-container" style="display:flex;align-items:center;gap:10px;justify-content:center;">
+                            <a class="btn buy-btn" href="{% url 'buy_now' product.id %}">Buy Now</a>
+                            <a class="btn cart-btn add-to-cart" href="{% url 'add_to_cart' product.id %}">Add to Cart</a>
+                            <button class="btn wishlist-toggle" data-product-id="{{ product.id }}" title="Add to Wishlist" style="background:none;border:none;cursor:pointer;">
+                                <i class="fas fa-heart {% if product.id in wishlist_ids %}text-danger{% else %}text-secondary{% endif %}"
+                                   style="font-size:18px;color:{% if product.id in wishlist_ids %}#dc3545{% else %}#6c757d{% endif %};"></i>
+                            </button>
                         </div>
-                    {% endfor %}
-                </div>
+                    </div>
+                {% endfor %}
             </div>
-        {% endfor %}
+        {% else %}
+            <div class="no-results">
+                <i class="fas fa-search"></i>
+                <h2>No Products Found</h2>
+                <p>We couldn't find any products matching "{{ query }}"</p>
+                <p style="margin-top: 10px;">Try searching with different keywords or <a href="{% url 'home' %}" style="color: #ff6f00;">browse all products</a></p>
+            </div>
+        {% endif %}
     </main>
 
     <!-- Footer -->
     <footer>
-        &copy; {{ year }} Ideal Furniture| 
+        &copy; 2024 Ideal Furniture| 
         <a href="#">Privacy Policy</a> | 
         <a href="#">Terms of Service</a> <br>
         Follow Us:
@@ -271,16 +285,6 @@
 
     <!-- JS -->
     <script>
-        function showCategory(categorySlug, element) {
-            const sections = document.querySelectorAll('.category-section');
-            sections.forEach(s => {
-                s.style.display = categorySlug === 'all' || s.id === categorySlug ? 'block' : 'none';
-            });
-            document.querySelectorAll('.main-nav a').forEach(a => a.classList.remove('active'));
-            element.classList.add('active');
-        }
-        showCategory('all', document.querySelector('.main-nav a.active'));
-
         // Wishlist toggle (AJAX)
         document.addEventListener('click', function(e){
             const btn = e.target.closest('.wishlist-toggle');
@@ -295,8 +299,6 @@
                 }
             }).then(async (r)=>{
                 if (r.redirected) {
-                    // If user is not authenticated, Django redirects to login.
-                    // Redirect the user to the login page.
                     window.location.href = r.url;
                     return;
                 }
@@ -320,7 +322,7 @@
         document.addEventListener('click', function(e) {
             const btn = e.target.closest('.add-to-cart');
             if (!btn) return;
-            e.preventDefault(); // Prevent default link navigation
+            e.preventDefault();
 
             const url = btn.getAttribute('href');
             const originalText = btn.innerHTML;
@@ -339,12 +341,10 @@
                 }
                 if (r.ok) {
                     const data = await r.json();
-                    // Update cart count in header
                     const cartCountEl = document.getElementById('cart-count');
                     if (cartCountEl) {
                         cartCountEl.textContent = data.cart_count;
                     }
-                    // Provide visual feedback
                     btn.innerHTML = 'Added!';
                     setTimeout(() => { btn.innerHTML = originalText; }, 1500);
                 } else {

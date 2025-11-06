@@ -1,32 +1,108 @@
-{% extends 'base.html' %}
+{% extends 'shop/base.html' %}
 
 {% block title %}Pay for Order #{{ order.id }}{% endblock %}
 
 {% block content %}
+<style>
+    .payment-container {
+        max-width: 600px;
+        margin: 50px auto;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+        overflow: hidden;
+        text-align: center;
+    }
+    .payment-header {
+        background: linear-gradient(135deg, #b57a50, #8d5a3a);
+        color: white;
+        padding: 30px 20px;
+    }
+    .payment-header h2 {
+        margin: 0;
+        font-size: 1.8rem;
+    }
+    .payment-header p {
+        margin: 5px 0 0;
+        opacity: 0.9;
+    }
+    .payment-body {
+        padding: 30px;
+    }
+    .amount-display {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #3a3128;
+        margin-bottom: 20px;
+    }
+    .payment-instructions {
+        color: #666;
+        margin-bottom: 25px;
+        line-height: 1.6;
+    }
+    .btn-pay-razorpay {
+        width: 100%;
+        padding: 15px;
+        background: linear-gradient(135deg, #28a745, #218838);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1.2rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 16px rgba(40, 167, 69, 0.3);
+    }
+    .btn-pay-razorpay:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+    }
+    .payment-footer {
+        background: #f9f6f2;
+        padding: 15px;
+        font-size: 0.9rem;
+        color: #666;
+    }
+    #statusMsg {
+        margin-top: 20px;
+        font-weight: 600;
+        color: #dc3545;
+    }
+    .loader-icon {
+        display: none;
+        margin: 20px auto;
+        font-size: 2rem;
+        color: #b57a50;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+</style>
+
 <div class="container my-5">
-  <div class="row justify-content-center">
-    <div class="col-md-7">
-      <div class="card shadow-sm">
-        <div class="card-body p-4">
-          <h4 class="mb-3">Complete Payment</h4>
-          <p class="text-muted mb-4">Order #{{ order.id }} • Amount: ₹{{ order.total_price }}</p>
-
-          <div class="d-flex align-items-center gap-2 mb-3">
-            <span class="badge bg-warning text-dark">Recommended</span>
-            <strong>UPI</strong>
-          </div>
-          <p class="mb-4">We'll open a secure Razorpay payment window. You can pay via UPI apps (PhonePe, Google Pay, Paytm, BHIM, etc.), card, netbanking, or wallet.</p>
-
-          <div class="d-flex gap-2">
-            <button id="payBtn" class="btn btn-primary">Pay Now</button>
-            <a href="{% url 'order_success' order.id %}" class="btn btn-outline-secondary">Pay Later</a>
-          </div>
-
-          <div id="statusMsg" class="mt-3"></div>
+    <div class="payment-container">
+        <div class="payment-header">
+            <h2>Complete Your Payment</h2>
+            <p>Order #{{ order.id }}</p>
         </div>
-      </div>
+        <div class="payment-body">
+            <p class="payment-instructions">You are about to pay:</p>
+            <div class="amount-display">₹{{ order.total_amount|floatformat:2 }}</div>
+            <p class="payment-instructions">
+                Click the button below to open a secure payment window. You can pay via UPI, Card, Netbanking, or Wallets.
+            </p>
+            <button id="payBtn" class="btn-pay-razorpay">
+                <i class="fas fa-shield-alt"></i> Pay Securely
+            </button>
+            <i class="fas fa-spinner loader-icon" id="loader"></i>
+            <div id="statusMsg"></div>
+        </div>
+        <div class="payment-footer">
+            <i class="fas fa-lock"></i> All transactions are secure and encrypted.
+        </div>
     </div>
-  </div>
 </div>
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
@@ -51,6 +127,9 @@
 
   async function startPayment(){
     const status = document.getElementById('statusMsg');
+    const loader = document.getElementById('loader');
+    loader.style.display = 'block';
+    document.getElementById('payBtn').style.display = 'none';
     status.textContent = '';
     try{
       const cfg = await fetchOrderConfig();
@@ -81,15 +160,20 @@
       };
       const rzp = new Razorpay(options);
       try { rzp.open(); } catch(e){ status.textContent = 'Unable to open payment window.'; }
+      loader.style.display = 'none';
+      document.getElementById('payBtn').style.display = 'block';
     } catch(err){
       status.textContent = (err && err.message) ? err.message : 'Failed to initialize payment.';
+      loader.style.display = 'none';
+      document.getElementById('payBtn').style.display = 'block';
     }
   }
 
   document.getElementById('payBtn').addEventListener('click', startPayment);
-  // Auto-open for convenience
-  window.addEventListener('load', () => setTimeout(startPayment, 300));
+  
+  // Automatically trigger payment for a seamless experience
+  window.addEventListener('load', () => {
+      setTimeout(startPayment, 500); // Short delay to allow page to render
+  });
 </script>
 {% endblock %}
-
-

@@ -29,6 +29,7 @@ EMAIL_HOST_PASSWORD=
 # Optional: Razorpay for payments (get free test keys from razorpay.com)
 RAZORPAY_KEY_ID=
 RAZORPAY_KEY_SECRET=
+RAZORPAY_WEBHOOK_SECRET=
 ```
 
 ### Step 4: Setup Database

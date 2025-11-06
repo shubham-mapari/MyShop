@@ -1,56 +1,819 @@
-{% extends 'base.html' %}
-{% block title %}My Orders{% endblock %}
-{% block content %}
-<div class="container my-4">
-  <h2 class="mb-3">My Orders</h2>
-  {% if orders %}
-    {% for order in orders %}
-      <div class="card mb-3 shadow-sm">
-        <div class="card-body">
-          <div class="d-flex justify-content-between">
-            <div>
-              <h5 class="mb-1">Order #{{ order.id }}</h5>
-              <div class="text-muted">Placed {{ order.created_at }}</div>
-            </div>
-            <div><span class="badge text-bg-secondary">{{ order.status }}</span></div>
-          </div>
-          <hr>
-          <ul class="mb-2">
-            {% for item in order.items.all %}
-              <li>{{ item.product.name }} × {{ item.quantity }}</li>
-            {% endfor %}
-          </ul>
-          <div class="fw-semibold">Total: ₹{{ order.total_price }}</div>
-        </div>
-      </div>
-    {% endfor %}
-  {% else %}
-    <p class="text-muted">You have not placed any orders yet.</p>
-  {% endif %}
-</div>
-{% endblock %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>My Orders</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders - Ideal Furniture</title>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <style>
+        * {
+            margin: 0; padding: 0; box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body { background: #f5f5f5; color: #333; }
+
+        /* --- Top Bar --- */
+        .top-bar {
+            background: #fffaf3; border-bottom: 1px solid #eee;
+            padding: 8px 50px; font-size: 13px;
+        }
+        .top-bar-content {
+            display: flex; justify-content: flex-end; align-items: center; gap: 25px;
+        }
+        .top-bar a { color: #555; text-decoration: none; transition: color 0.3s; }
+        .top-bar a:hover { color: #e65100; }
+
+        /* --- Header --- */
+        .main-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 50px; background: #fff; box-shadow: 0px 2px 10px rgba(0,0,0,0.05);
+        }
+        .logo a { text-decoration: none; color: #4a3c2a; }
+        .logo h1 { font-size: 2.3rem; font-weight: 700; }
+        .logo p { font-size: 0.9rem; color: #777; }
+
+        .header-icons {
+            display: flex; gap: 20px; position: relative;
+        }
+        .header-icons a {
+            text-decoration: none; color: #555;
+            font-size: 14px; display: flex; flex-direction: column;
+            align-items: center; transition: color 0.3s;
+        }
+        .header-icons i { font-size: 1.4rem; margin-bottom: 2px; }
+        .header-icons a:hover { color: #ff6f00; }
+
+        /* --- Page Container --- */
+        .page-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+            color: #4a3c2a;
+            margin-bottom: 8px;
+        }
+
+        .page-header p {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        /* --- Order Cards --- */
+        .orders-container {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .order-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            overflow: hidden;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .order-card:hover {
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        }
+
+        /* Order Header */
+        .order-header {
+            background: linear-gradient(135deg, #f9f6f2, #f4ede6);
+            padding: 20px 25px;
+            border-bottom: 2px solid #e1d7cd;
+        }
+
+        .order-header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .order-id {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #4a3c2a;
+        }
+
+        .order-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .status-shipped {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status-delivered {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-cancelled {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .order-meta {
+            display: flex;
+            gap: 25px;
+            flex-wrap: wrap;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .order-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .order-meta-item i {
+            color: #ff6f00;
+        }
+
+        /* Order Body */
+        .order-body {
+            padding: 25px;
+        }
+
+        /* Product Items */
+        .order-items {
+            margin-bottom: 20px;
+        }
+
+        .product-item {
+            display: flex;
+            gap: 20px;
+            padding: 15px;
+            background: #fafafa;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            transition: background 0.3s ease;
+        }
+
+        .product-item:hover {
+            background: #f5f5f5;
+        }
+
+        .product-image {
+            width: 100px;
+            height: 100px;
+            border-radius: 8px;
+            overflow: hidden;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .product-details {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .product-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #4a3c2a;
+            margin-bottom: 6px;
+        }
+
+        .product-info {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .product-price {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #ff6f00;
+        }
+
+        /* Order Summary */
+        .order-summary {
+            background: #f9f6f2;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .summary-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #4a3c2a;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 0.95rem;
+        }
+
+        .summary-row.total {
+            border-top: 2px solid #e1d7cd;
+            margin-top: 10px;
+            padding-top: 15px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #4a3c2a;
+        }
+
+        .summary-label {
+            color: #666;
+        }
+
+        .summary-value {
+            font-weight: 600;
+            color: #333;
+        }
+
+        /* Delivery Info */
+        .delivery-info {
+            background: #e8f5e9;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .delivery-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2e7d32;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .delivery-address {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .delivery-date {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #2e7d32;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        /* Payment Info */
+        .payment-info {
+            background: #fff3e0;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .payment-method {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            color: #e65100;
+        }
+
+        .payment-method i {
+            font-size: 1.3rem;
+        }
+
+        .payment-status {
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .payment-paid {
+            background: #c8e6c9;
+            color: #2e7d32;
+        }
+
+        .payment-pending {
+            background: #ffe0b2;
+            color: #e65100;
+        }
+
+        /* Order Actions */
+        .order-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ff6f00, #ffb74d);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 111, 0, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #555;
+            border: 1px solid #ddd;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-danger {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ef9a9a;
+        }
+
+        .btn-danger:hover {
+            background: #ffcdd2;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+
+        .empty-state i {
+            font-size: 5rem;
+            color: #ddd;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h2 {
+            font-size: 1.8rem;
+            color: #4a3c2a;
+            margin-bottom: 12px;
+        }
+
+        .empty-state p {
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        .empty-state .action-btn {
+            display: inline-flex;
+        }
+
+        /* Footer */
+        footer {
+            background: #4a3c2a; color: #fff;
+            text-align: center; padding: 25px 20px;
+            font-size: 14px;
+            margin-top: 50px;
+        }
+        footer a {
+            color: #ffb74d; text-decoration: none; margin: 0 8px;
+        }
+        footer a:hover { text-decoration: underline; }
+
+        /* Notification Toast */
+        .notification-toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 16px 24px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 10000;
+            animation: slideInRight 0.3s ease;
+            max-width: 400px;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .notification-toast.success {
+            border-left: 4px solid #28a745;
+        }
+
+        .notification-toast.error {
+            border-left: 4px solid #dc3545;
+        }
+
+        .notification-toast.info {
+            border-left: 4px solid #2196F3;
+        }
+
+        .notification-icon {
+            font-size: 1.5rem;
+        }
+
+        .notification-toast.success .notification-icon {
+            color: #28a745;
+        }
+
+        .notification-toast.error .notification-icon {
+            color: #dc3545;
+        }
+
+        .notification-toast.info .notification-icon {
+            color: #2196F3;
+        }
+
+        .notification-message {
+            flex: 1;
+            font-size: 0.95rem;
+            color: #333;
+        }
+
+        .notification-close {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: #999;
+            cursor: pointer;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .notification-close:hover {
+            color: #333;
+        }
+
+        /* Responsive */
+        @media(max-width: 768px) {
+            .main-header { flex-direction: column; gap: 15px; text-align: center; }
+            .header-icons { justify-content: center; flex-wrap: wrap; }
+            .page-container { padding: 20px 15px; }
+            .order-header { padding: 15px; }
+            .order-body { padding: 15px; }
+            .product-item { flex-direction: column; }
+            .product-image { width: 100%; height: 200px; }
+            .order-actions { flex-direction: column; }
+            .action-btn { width: 100%; justify-content: center; }
+            .payment-info { flex-direction: column; gap: 10px; }
+            .notification-toast {
+                right: 10px;
+                left: 10px;
+                max-width: none;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>My Orders</h1>
-    <ul>
-        {% for order in orders %}
-            <li>
-                Order #{{ order.id }} - {{ order.status }} - ${{ order.total_price }}
-                <ul>
-                    {% for item in order.orderitem_set.all %}
-                        <li>{{ item.product.name }} (x{{ item.quantity }})</li>
-                    {% endfor %}
-                </ul>
-            </li>
-        {% empty %}
-            <li>No orders found</li>
-        {% endfor %}
-    </ul>
 
-    <a href="/">Back to Home</a>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="top-bar-content">
+            <a href="tel:+917620062635"><i class="fas fa-phone-alt"></i> +91-7620062635</a>
+            <a href="{% url 'support' %}"><i class="fas fa-headset"></i> Support</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'my_orders' %}"><i class="fas fa-shopping-bag"></i> My Orders</a>
+            {% else %}
+                <a href="{% url 'track_order' %}"><i class="fas fa-truck"></i> Track Order</a>
+            {% endif %}
+            <a href="{% url 'returns' %}"><i class="fas fa-rotate-left"></i> Returns</a>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="main-header">
+        <div class="logo">
+            <a href="{% url 'home' %}">
+                <h1>Ideal Furniture</h1>
+                <p>Furniture... bonded with love ❤️</p>
+            </a>
+        </div>
+        <div class="header-icons">
+            <a href="{% url 'offers' %}"><i class="fas fa-tags"></i><span>Offers</span></a>
+            <a href="{% url 'profile' %}"><i class="fas fa-user"></i><span>Profile</span></a>
+            <a href="{% url 'wishlist' %}"><i class="fas fa-heart" style="color:#6c757d"></i><span>Wishlist</span></a>
+            <a href="{% url 'cart' %}"><i class="fas fa-shopping-cart"></i><span>Cart</span></a>
+            {% if user.is_authenticated %}
+            <a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
+            {% else %}
+            <a href="{% url 'login' %}"><i class="fas fa-sign-in-alt"></i><span>Login</span></a>
+            {% endif %}
+        </div>
+    </header>
+
+    <!-- Page Content -->
+    <div class="page-container">
+        <div class="page-header">
+            <h1><i class="fas fa-shopping-bag"></i> My Orders</h1>
+            <p>View and track all your orders</p>
+        </div>
+
+        <div class="orders-container">
+            {% if orders %}
+                {% for order in orders %}
+                <div class="order-card">
+                    <!-- Order Header -->
+                    <div class="order-header">
+                        <div class="order-header-top">
+                            <div class="order-id">
+                                <i class="fas fa-receipt"></i> Order #{{ order.id }}
+                            </div>
+                            <div class="order-status status-{{ order.status|lower }}">
+                                {% if order.status == 'Pending' %}
+                                    <i class="fas fa-clock"></i>
+                                {% elif order.status == 'Shipped' %}
+                                    <i class="fas fa-shipping-fast"></i>
+                                {% elif order.status == 'Delivered' %}
+                                    <i class="fas fa-check-circle"></i>
+                                {% elif order.status == 'Cancelled' %}
+                                    <i class="fas fa-times-circle"></i>
+                                {% endif %}
+                                {{ order.status }}
+                            </div>
+                        </div>
+                        <div class="order-meta">
+                            <div class="order-meta-item">
+                                <i class="fas fa-calendar-alt"></i>
+                                <span>Placed on {{ order.created_at|date:"d M, Y" }}</span>
+                            </div>
+                            <div class="order-meta-item">
+                                <i class="fas fa-rupee-sign"></i>
+                                <span>Total: ₹{{ order.total_amount }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Order Body -->
+                    <div class="order-body">
+                        <!-- Product Items -->
+                        <div class="order-items">
+                            {% for item in order.items.all %}
+                            <div class="product-item">
+                                <div class="product-image">
+                                    {% if item.product.image %}
+                                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                                    {% else %}
+                                        <img src="/static/images/no-image.png" alt="No Image">
+                                    {% endif %}
+                                </div>
+                                <div class="product-details">
+                                    <div class="product-name">{{ item.product.name }}</div>
+                                    <div class="product-info">
+                                        <span><i class="fas fa-box"></i> Qty: {{ item.quantity }}</span>
+                                        {% if item.product.discount > 0 %}
+                                            <span><i class="fas fa-tag"></i> {{ item.product.discount }}% OFF</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="product-price">₹{{ item.product.discounted_price }}</div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Payment Info -->
+                        <div class="payment-info">
+                            <div class="payment-method">
+                                {% if order.payment_method == 'cod' %}
+                                    <i class="fas fa-money-bill-wave"></i>
+                                    <span>Cash on Delivery</span>
+                                {% elif order.payment_method == 'card' %}
+                                    <i class="fas fa-credit-card"></i>
+                                    <span>Card Payment</span>
+                                {% elif order.payment_method == 'upi' %}
+                                    <i class="fas fa-mobile-alt"></i>
+                                    <span>UPI Payment</span>
+                                {% else %}
+                                    <i class="fas fa-wallet"></i>
+                                    <span>{{ order.payment_method|upper }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="payment-status {% if order.payment_status == 'Paid' %}payment-paid{% else %}payment-pending{% endif %}">
+                                {{ order.payment_status }}
+                            </div>
+                        </div>
+
+                        <!-- Delivery Info -->
+                        {% if order.shipping_address %}
+                        <div class="delivery-info">
+                            <div class="delivery-title">
+                                <i class="fas fa-map-marker-alt"></i>
+                                Delivery Address
+                            </div>
+                            <div class="delivery-address">
+                                {{ order.shipping_address }}
+                            </div>
+                            {% if order.status == 'Shipped' %}
+                            <div class="delivery-date">
+                                <i class="fas fa-truck"></i>
+                                Expected delivery in 3-5 business days
+                            </div>
+                            {% elif order.status == 'Delivered' %}
+                            <div class="delivery-date">
+                                <i class="fas fa-check-circle"></i>
+                                Delivered on {{ order.created_at|date:"d M, Y" }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        <!-- Order Summary -->
+                        <div class="order-summary">
+                            <div class="summary-title">
+                                <i class="fas fa-file-invoice-dollar"></i>
+                                Order Summary
+                            </div>
+                            <div class="summary-row">
+                                <span class="summary-label">Subtotal</span>
+                                <span class="summary-value">₹{{ order.subtotal|floatformat:2 }}</span>
+                            </div>
+                            <div class="summary-row">
+                                <span class="summary-label">GST (18%)</span>
+                                <span class="summary-value">Included</span>
+                            </div>
+                            <div class="summary-row">
+                                <span class="summary-label">Delivery Charges</span>
+                                <span class="summary-value">Included</span>
+                            </div>
+                            <div class="summary-row total">
+                                <span class="summary-label">Total Amount</span>
+                                <span class="summary-value">₹{{ order.total_amount }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Order Actions -->
+                        <div class="order-actions">
+                            {% if order.status == 'Pending' %}
+                                <button class="action-btn btn-danger" onclick="confirmCancelOrder({{ order.id }})">
+                                    <i class="fas fa-times"></i>
+                                    Cancel Order
+                                </button>
+                                <form id="cancel-form-{{ order.id }}" action="{% url 'cancel_order' order.id %}" method="POST" style="display: none;">
+                                    {% csrf_token %}
+                                </form>
+                            {% endif %}
+                            
+                            <a href="{% url 'download_invoice' order.id %}" class="action-btn btn-secondary" download>
+                                <i class="fas fa-download"></i>
+                                Download Invoice
+                            </a>
+
+                            {% if order.status == 'Delivered' %}
+                                <a href="{% url 'support' %}?subject=Return/Exchange Request for Order {{ order.id }}" class="action-btn btn-secondary">
+                                    <i class="fas fa-undo"></i>
+                                    Return/Exchange
+                                </a>
+                            {% endif %}
+
+                            <a href="{% url 'track_order' %}?order_id={{ order.id }}" class="action-btn btn-secondary">
+                                <i class="fas fa-truck"></i>
+                                Track Order
+                            </a>
+
+                            <a href="{% url 'support' %}?subject=Help with Order {{ order.id }}" class="action-btn btn-secondary">
+                                <i class="fas fa-headset"></i>
+                                Need Help?
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <!-- Empty State -->
+                <div class="empty-state">
+                    <i class="fas fa-shopping-bag"></i>
+                    <h2>No Orders Yet</h2>
+                    <p>You haven't placed any orders. Start shopping to see your orders here!</p>
+                    <a href="{% url 'home' %}" class="action-btn btn-primary">
+                        <i class="fas fa-shopping-cart"></i>
+                        Start Shopping
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        &copy; 2024 Ideal Furniture| 
+        <a href="#">Privacy Policy</a> | 
+        <a href="#">Terms of Service</a> <br>
+        Follow Us:
+        <a href="#"><i class="fab fa-facebook"></i></a> 
+        <a href="#"><i class="fab fa-instagram"></i></a>
+        <a href="#"><i class="fab fa-twitter"></i></a>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // Show notification toast
+        function showNotification(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `notification-toast ${type}`;
+            
+            let icon = 'fa-info-circle';
+            if (type === 'success') icon = 'fa-check-circle';
+            if (type === 'error') icon = 'fa-exclamation-circle';
+            
+            toast.innerHTML = `
+                <i class="fas ${icon} notification-icon"></i>
+                <div class="notification-message">${message}</div>
+                <button class="notification-close" onclick="this.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.style.animation = 'slideInRight 0.3s ease reverse';
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, 5000);
+        }
+
+        // Confirm and cancel order
+        function confirmCancelOrder(orderId) {
+            if (confirm('Are you sure you want to cancel this order? This action cannot be undone.')) {
+                document.getElementById('cancel-form-' + orderId).submit();
+            }
+        }
+
+        // Show Django messages as notifications
+        {% if messages %}
+            {% for message in messages %}
+                showNotification('{{ message }}', '{{ message.tags }}');
+            {% endfor %}
+        {% endif %}
+    </script>
+
 </body>
 </html>

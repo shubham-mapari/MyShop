@@ -8,6 +8,7 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.password_validation import validate_password
 from django.db import transaction
 from decimal import Decimal
+import json
 
 from .models import Product, Profile, Category, WishlistItem, Cart, CartItem, Order, OrderItem, Payment
 from django.conf import settings
@@ -28,6 +29,38 @@ def home(request):
         'categories': categories,
         'cart_count': cart_count,
         'wishlist_ids': wishlist_ids,
+    })
+
+# --------------------------
+# Search products
+# --------------------------
+def search_products(request):
+    query = request.GET.get('q', '').strip()
+    categories = Category.objects.all()
+    cart = request.session.get('cart', {})
+    cart_count = sum(cart.values()) if isinstance(cart, dict) else 0
+    wishlist_ids = set()
+    if request.user.is_authenticated:
+        wishlist_ids = set(WishlistItem.objects.filter(user=request.user).values_list('product_id', flat=True))
+    
+    search_results = []
+    if query:
+        # Search in product name, description, and category name
+        search_results = Product.objects.filter(
+            name__icontains=query
+        ) | Product.objects.filter(
+            description__icontains=query
+        ) | Product.objects.filter(
+            category__name__icontains=query
+        )
+        search_results = search_results.distinct()
+    
+    return render(request, 'shop/search_results.html', {
+        'categories': categories,
+        'cart_count': cart_count,
+        'wishlist_ids': wishlist_ids,
+        'query': query,
+        'search_results': search_results,
     })
 
 # --------------------------
@@ -228,7 +261,58 @@ def returns_page(request):
     return render(request, 'shop/returns.html')
 
 def track_order_page(request):
-    return render(request, 'shop/track_order.html')
+    order_id = request.GET.get('order_id')
+    order = None
+    if order_id and request.user.is_authenticated:
+        order = get_object_or_404(Order, id=order_id, user=request.user)
+    
+    return render(request, 'shop/track_order.html', {'order': order})
+
+def get_order_status_api(request, order_id):
+    """
+    Mock API to return order tracking details.
+    In a real app, this would fetch from a shipping provider's API.
+    """
+    try:
+        # Security Fix: Ensure the order belongs to the logged-in user.
+        if not request.user.is_authenticated:
+            return JsonResponse({"error": "Authentication required"}, status=401)
+
+        # Use user=request.user to scope the query
+        order = get_object_or_404(Order, id=order_id, user=request.user)
+        
+        # Mock different timelines based on order status
+        if order.status == Order.STATUS_DELIVERED:
+            timeline = [
+               {"status": "Order Placed", "time": "2025-11-02 10:00 AM", "details": "Your order has been placed."},
+               {"status": "Packed", "time": "2025-11-02 12:30 PM", "details": "Your order has been packed."},
+               {"status": "Shipped", "time": "2025-11-03 08:00 AM", "details": "Your order has been shipped."},
+               {"status": "Out for Delivery", "time": "2025-11-04 09:00 AM", "details": "Your order is out for delivery."},
+               {"status": "Delivered", "time": "2025-11-04 05:00 PM", "details": "Your order has been delivered."}
+            ]
+            current_status = "Delivered"
+        elif order.status == Order.STATUS_SHIPPED:
+            timeline = [
+               {"status": "Order Placed", "time": "2025-11-02 10:00 AM", "details": "Your order has been placed."},
+               {"status": "Packed", "time": "2025-11-02 12:30 PM", "details": "Your order has been packed."},
+               {"status": "Shipped", "time": "2025-11-03 08:00 AM", "details": "Your order has been shipped."}
+            ]
+            current_status = "Shipped"
+        else: # Pending or Cancelled
+            timeline = [
+               {"status": "Order Placed", "time": order.created_at.strftime('%Y-%m-%d %I:%M %p'), "details": "Your order has been placed."}
+            ]
+            current_status = "Order Placed"
+
+        mock_data = {
+            "orderId": f"#{order.id}",
+            "statusTimeline": timeline,
+            "currentStatus": current_status,
+            "estimatedDelivery": "2025-11-04" # Static for demo
+        }
+        return JsonResponse(mock_data)
+    except Order.DoesNotExist:
+        return JsonResponse({"error": "Order not found"}, status=404)
 
 def offers_page(request):
     categories = Category.objects.all()
@@ -255,6 +339,86 @@ def my_orders(request):
     profile = getattr(request.user, 'profile', None)
     orders = Order.objects.filter(customer=profile).order_by('-created_at') if profile else []
     return render(request, 'shop/my_orders.html', { 'orders': orders })
+
+# --------------------------
+# Cancel Order
+# --------------------------
+@login_required(login_url='login')
+def cancel_order(request, order_id):
+    if request.method == 'POST':
+        profile = getattr(request.user, 'profile', None)
+        order = get_object_or_404(Order, id=order_id, customer=profile)
+        
+        # Only allow cancellation if order is pending
+        if order.status == Order.STATUS_PENDING:
+            order.status = Order.STATUS_CANCELLED
+            order.save()
+            messages.success(request, f'Order #{order.id} has been cancelled successfully.')
+        else:
+            messages.error(request, 'This order cannot be cancelled.')
+        
+        return redirect('my_orders')
+    return redirect('my_orders')
+
+# --------------------------
+# Download Invoice
+# --------------------------
+@login_required(login_url='login')
+def download_invoice(request, order_id):
+    from django.http import HttpResponse
+    profile = getattr(request.user, 'profile', None)
+    order = get_object_or_404(Order, id=order_id, customer=profile)
+    
+    # Create a simple text invoice (you can enhance this with PDF generation)
+    invoice_content = f"""
+    ========================================
+    IDEAL FURNITURE - INVOICE
+    ========================================
+    
+    Order ID: #{order.id}
+    Date: {order.created_at.strftime('%d %B, %Y')}
+    Status: {order.status}
+    
+    ----------------------------------------
+    CUSTOMER DETAILS
+    ----------------------------------------
+    Name: {request.user.get_full_name() or request.user.username}
+    Email: {request.user.email}
+    Phone: {profile.mobile_number if profile else 'N/A'}
+    
+    ----------------------------------------
+    SHIPPING ADDRESS
+    ----------------------------------------
+    {order.shipping_address or 'N/A'}
+    
+    ----------------------------------------
+    ORDER ITEMS
+    ----------------------------------------
+    """
+    
+    for item in order.items.all():
+        invoice_content += f"\n{item.product.name}\n"
+        invoice_content += f"Quantity: {item.quantity}\n"
+        invoice_content += f"Price: ₹{item.product.discounted_price()}\n"
+        invoice_content += f"Subtotal: ₹{item.total_price()}\n"
+        invoice_content += "----------------------------------------\n"
+    
+    invoice_content += f"""
+    ----------------------------------------
+    PAYMENT SUMMARY
+    ----------------------------------------
+    Total Amount: ₹{order.total_amount}
+    Payment Method: {order.payment_method.upper()}
+    Payment Status: {order.payment_status}
+    
+    ========================================
+    Thank you for shopping with us!
+    ========================================
+    """
+    
+    response = HttpResponse(invoice_content, content_type='text/plain')
+    response['Content-Disposition'] = f'attachment; filename="invoice_{order.id}.txt"'
+    return response
 
 # --------------------------
 # Buy Now view
@@ -302,12 +466,16 @@ def buy_now(request, product_id):
             )
             OrderItem.objects.create(order=order, product=product, quantity=quantity)
 
-            messages.success(request, "Your order has been placed successfully!")
-            if payment_method == 'upi':
+            # If payment is online, redirect to Razorpay. Otherwise, show success.
+            if payment_method in ['upi', 'card']:
+                messages.info(request, "Your order has been placed. Please complete the payment.")
                 return redirect('pay_now', order_id=order.id)
             else:
-                # Assuming you have an order success page
-                return redirect('home') # Or redirect to an order success page
+                order.payment_status = 'Confirmed'
+                order.save()
+                messages.success(request, "Your order has been placed successfully!")
+                return redirect('order_success', order_id=order.id)
+                return redirect('home')
 
     # --- Handle GET request (when page first loads) or quantity change ---
     # This block now runs for the initial page load and when quantity is updated.
@@ -472,6 +640,62 @@ def payment_verify(request):
     payment.order.save()
     
     return JsonResponse({'ok': True, 'message': 'Payment verified successfully'})
+
+@csrf_exempt
+def razorpay_webhook(request):
+    """
+    Handle incoming webhooks from Razorpay to automatically update order status.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
+
+    # Get the signature from the headers and the request body
+    signature = request.headers.get('X-Razorpay-Signature')
+    body = request.body
+
+    # Check for required components
+    if not signature or not body or not settings.RAZORPAY_WEBHOOK_SECRET:
+        return JsonResponse({'status': 'error', 'message': 'Missing required data for verification'}, status=400)
+
+    # Verify the webhook signature
+    try:
+        client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+        client.utility.verify_webhook_signature(body.decode('utf-8'), signature, settings.RAZORPAY_WEBHOOK_SECRET)
+    except razorpay.errors.SignatureVerificationError:
+        return JsonResponse({'status': 'error', 'message': 'Webhook signature verification failed'}, status=400)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': f'An unexpected error occurred: {str(e)}'}, status=500)
+
+    # Process the event payload
+    try:
+        payload = json.loads(body)
+        event = payload.get('event')
+
+        if event == 'payment.captured':
+            payment_entity = payload.get('payload', {}).get('payment', {}).get('entity', {})
+            razorpay_order_id = payment_entity.get('order_id')
+            razorpay_payment_id = payment_entity.get('id')
+
+            if not razorpay_order_id:
+                return JsonResponse({'status': 'ignored', 'message': 'No Razorpay Order ID in payload'}, status=200)
+
+            # Find the payment and order in your database
+            payment = Payment.objects.filter(razorpay_order_id=razorpay_order_id).select_related('order').first()
+            if payment and payment.status != 'paid':
+                # Update payment and order status
+                payment.razorpay_payment_id = razorpay_payment_id
+                payment.status = 'paid'
+                payment.save()
+
+                payment.order.payment_status = 'Paid'
+                payment.order.save()
+                
+                return JsonResponse({'status': 'success', 'message': f'Order {payment.order.id} updated to Paid.'}, status=200)
+
+    except (json.JSONDecodeError, KeyError, AttributeError):
+        return JsonResponse({'status': 'error', 'message': 'Invalid payload format'}, status=400)
+
+    return JsonResponse({'status': 'ok', 'message': 'Webhook received and processed'}, status=200)
 
 @login_required(login_url='login')
 def pay_now(request, order_id):

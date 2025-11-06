@@ -1,21 +1,341 @@
-{% extends 'base.html' %}
-{% block title %}Track Order{% endblock %}
-{% block content %}
-<div class="container my-4">
-  <h2 class="mb-3">Track Your Order</h2>
-  <form class="row g-2" method="get">
-    <div class="col-sm-4">
-      <input class="form-control" type="text" name="order_id" placeholder="Enter Order ID">
-    </div>
-    <div class="col-sm-3">
-      <button class="btn btn-primary" type="submit">Track</button>
-    </div>
-  </form>
-  {% if request.GET.order_id %}
-  <div class="mt-4">
-    <p>Status for <strong>#{{ request.GET.order_id }}</strong>: In transit (demo).</p>
-  </div>
-  {% endif %}
-</div>
-{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Order - Ideal Furniture</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #ff6f00;
+            --primary-dark: #e65100;
+            --secondary-color: #4a3c2a;
+            --green-color: #28a745;
+            --blue-color: #0d6efd;
+            --grey-color: #6c757d;
+            --light-grey: #f0f2f5;
+            --border-color: #dee2e6;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-grey);
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .tracking-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        .tracking-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            padding: 25px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .tracking-header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        .tracking-header .order-id {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        .tracking-summary {
+            padding: 20px 30px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fffaf3;
+        }
+        .summary-item {
+            text-align: center;
+        }
+        .summary-item .label {
+            font-size: 0.9rem;
+            color: var(--grey-color);
+            margin-bottom: 5px;
+        }
+        .summary-item .value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--secondary-color);
+        }
+        .summary-item .value.status {
+            color: var(--green-color);
+        }
+        .timeline-container {
+            padding: 30px;
+        }
+        .timeline {
+            position: relative;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 15px;
+            width: 4px;
+            background: var(--border-color);
+            border-radius: 2px;
+        }
+        .timeline-item {
+            position: relative;
+            padding-left: 50px;
+            margin-bottom: 30px;
+        }
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+        .timeline-icon {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: var(--grey-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            border: 4px solid var(--light-grey);
+            z-index: 1;
+        }
+        .timeline-content {
+            padding-top: 5px;
+        }
+        .timeline-status {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+        }
+        .timeline-details, .timeline-time {
+            font-size: 0.9rem;
+            color: var(--grey-color);
+        }
 
+        /* Timeline Item States */
+        .timeline-item.completed .timeline-icon {
+            background: var(--green-color);
+        }
+        .timeline-item.completed .timeline-status {
+            color: var(--green-color);
+        }
+        .timeline-item.active .timeline-icon {
+            background: var(--blue-color);
+            transform: scale(1.1);
+        }
+        .timeline-item.active .timeline-status {
+            color: var(--blue-color);
+        }
+        .timeline-item.pending .timeline-icon {
+            background: var(--border-color);
+        }
+        .timeline-item.pending .timeline-status,
+        .timeline-item.pending .timeline-details,
+        .timeline-item.pending .timeline-time {
+            color: #aaa;
+        }
+
+        .actions {
+            padding: 20px 30px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 15px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+        .btn-secondary {
+            background: #e9ecef;
+            color: #333;
+        }
+        .btn-secondary:hover {
+            background: #ced4da;
+        }
+        .loader, .error-message {
+            text-align: center;
+            padding: 50px;
+            font-size: 1.2rem;
+            color: var(--grey-color);
+        }
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            .tracking-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .tracking-summary { flex-direction: column; gap: 15px; align-items: stretch; }
+        }
+    </style>
+</head>
+<body>
+
+{% if order %}
+    <!-- Hidden input to pass order ID to JavaScript -->
+    <input type="hidden" id="order-id-data" value="{{ order.id }}">
+{% endif %}
+
+<div class="tracking-container" id="tracking-container" style="display: none;">
+    <div class="tracking-header">
+        <div>
+            <h1>Order Tracking</h1>
+            <span class="order-id" id="order-id"></span>
+        </div>
+        <a href="{% url 'home' %}" class="btn btn-secondary" style="background: rgba(255,255,255,0.2); color: white;">Go Home</a>
+    </div>
+
+    <div class="tracking-summary">
+        <div class="summary-item">
+            <div class="label">Current Status</div>
+            <div class="value status" id="current-status"></div>
+        </div>
+        <div class="summary-item">
+            <div class="label">Estimated Delivery</div>
+            <div class="value" id="estimated-delivery"></div>
+        </div>
+    </div>
+
+    <div class="timeline-container">
+        <ul class="timeline" id="timeline">
+            <!-- Timeline items will be injected here by JavaScript -->
+        </ul>
+    </div>
+
+    <div class="actions">
+        <button class="btn btn-primary" id="refresh-btn"><i class="fas fa-sync-alt"></i> Refresh Status</button>
+        <a href="{% url 'my_orders' %}" class="btn btn-secondary">Back to My Orders</a>
+    </div>
+</div>
+
+<div id="loader" class="loader">
+    <i class="fas fa-spinner fa-spin"></i> Loading tracking details...
+</div>
+
+<div id="error-message" class="error-message" style="display: none;">
+    <i class="fas fa-exclamation-triangle"></i> Could not load tracking details. Please try again.
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Correctly get the order ID from the hidden input field
+        const orderIdInput = document.getElementById('order-id-data');
+        const orderId = orderIdInput ? orderIdInput.value : null;
+        // Fallback to URL param if needed, though the hidden input is more reliable
+        const finalOrderId = orderId || new URLSearchParams(window.location.search).get('order_id');
+
+        const trackingContainer = document.getElementById('tracking-container');
+        const loader = document.getElementById('loader');
+        const errorMessage = document.getElementById('error-message');
+        const refreshBtn = document.getElementById('refresh-btn');
+
+        const statusIcons = {
+            "Order Placed": "fa-box",
+            "Packed": "fa-box-open",
+            "Shipped": "fa-shipping-fast",
+            "Out for Delivery": "fa-truck",
+            "Delivered": "fa-check-circle"
+        };
+
+        async function fetchTrackingData() {
+            loader.style.display = 'block';
+            trackingContainer.style.display = 'none';
+            errorMessage.style.display = 'none';
+
+            try {
+                const response = await fetch(`/api/order-status/${finalOrderId}/`);
+                if (!response.ok) throw new Error('Network response was not ok');
+                const data = await response.json();
+                renderTrackingData(data);
+                loader.style.display = 'none';
+                trackingContainer.style.display = 'block';
+            } catch (error) {
+                console.error('Fetch error:', error);
+                loader.style.display = 'none';
+                errorMessage.style.display = 'block';
+            }
+        }
+
+        function renderTrackingData(data) {
+            document.getElementById('order-id').textContent = `Order ID: ${data.orderId}`;
+            document.getElementById('current-status').textContent = data.currentStatus;
+            document.getElementById('estimated-delivery').textContent = data.estimatedDelivery;
+
+            const timelineEl = document.getElementById('timeline');
+            timelineEl.innerHTML = ''; // Clear previous data
+
+            const allStatuses = ["Order Placed", "Packed", "Shipped", "Out for Delivery", "Delivered"];
+            const completedStatuses = data.statusTimeline.map(s => s.status);
+            const activeStatusIndex = completedStatuses.length - 1;
+
+            allStatuses.forEach((status, index) => {
+                const timelineItem = document.createElement('li');
+                timelineItem.classList.add('timeline-item');
+
+                const statusData = data.statusTimeline.find(s => s.status === status);
+
+                let stateClass = 'pending';
+                if (index < activeStatusIndex) {
+                    stateClass = 'completed';
+                } else if (index === activeStatusIndex) {
+                    stateClass = 'active';
+                }
+
+                timelineItem.classList.add(stateClass);
+
+                const iconClass = statusIcons[status] || 'fa-question-circle';
+                const icon = stateClass === 'completed' ? 'fa-check' : iconClass;
+
+                timelineItem.innerHTML = `
+                    <div class="timeline-icon"><i class="fas ${icon}"></i></div>
+                    <div class="timeline-content">
+                        <h3 class="timeline-status">${status}</h3>
+                        ${statusData ? `
+                            <p class="timeline-details">${statusData.details}</p>
+                            <p class="timeline-time">${statusData.time}</p>
+                        ` : ''}
+                    </div>
+                `;
+                timelineEl.appendChild(timelineItem);
+            });
+        }
+
+        if (finalOrderId) {
+            fetchTrackingData();
+        } else {
+            loader.style.display = 'none';
+            errorMessage.textContent = 'No Order ID provided. Please go back and select an order to track.';
+            errorMessage.style.display = 'block';
+        }
+
+        refreshBtn.addEventListener('click', fetchTrackingData);
+    });
+</script>
+
+</body>
+</html>
